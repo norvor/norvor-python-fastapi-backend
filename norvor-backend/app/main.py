@@ -1,50 +1,41 @@
-from fastapi import FastAPI, Depends, HTTPException
-# Add this import
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from . import models, schemas
-from .database import SessionLocal, engine
+from .database import Base, engine
+from .api.api_v1 import api_router
 
-models.Base.metadata.create_all(bind=engine)
+# This command creates the database tables if they don't exist
+# based on your models.py
+Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(
+    title="Norvor CRM Backend",
+    description="The backend for the Norvor comprehensive CRM platform.",
+    version="1.0.0"
+)
 
-# --- ADD THIS CORS MIDDLEWARE SECTION ---
-# This list defines which frontend URLs are allowed to access your API
+# --- CORS Middleware ---
+# Defines which frontend domains are allowed to communicate with this API
 origins = [
     "http://localhost",
-    "http://localhost:3000", # The default port for React dev server
-    "https://www.norvorx.com", # Add your frontend domain here later
+    "http://localhost:3000", # Default for local React dev
+    "https://api.norvorx.com", # Your deployed API
+    "https://www.norvorx.com", # Your future frontend domain
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"], # Allows all methods (GET, POST, etc.)
-    allow_headers=["*"], # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-# ----------------------------------------
+
+# --- Include API Routers ---
+# This is the main line that connects your modular endpoints to the app
+app.include_router(api_router, prefix="/api/v1")
 
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-@app.get("/")
+# A simple root endpoint to confirm the API is running
+@app.get("/", tags=["Root"])
 def read_root():
     return {"message": "Welcome to the Norvor Backend!"}
-
-
-@app.post("/users/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = models.User(**user.dict())
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
