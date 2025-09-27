@@ -7,9 +7,12 @@ from sqlalchemy import (
     Date,
     ForeignKey,
     JSON,
+    Text,
+    DateTime, # Import DateTime for timestamps
 )
 from sqlalchemy.orm import relationship, declarative_base
 import enum
+from datetime import datetime
 
 Base = declarative_base()
 
@@ -104,10 +107,7 @@ class Task(Base):
     project = relationship("Project", back_populates="tasks")
     assignee = relationship("User")
 
-# --- ADD EVERYTHING BELOW THIS LINE ---
-
-# --- HR Enums and Models ---
-
+# --- HR Models ---
 class LeaveType(str, enum.Enum):
     VACATION = 'Vacation'
     SICK = 'Sick Leave'
@@ -127,5 +127,53 @@ class TimeOffRequest(Base):
     end_date = Column(Date)
     status = Column(Enum(RequestStatus))
     reason = Column(String, nullable=True)
-    
     user = relationship("User")
+
+# --- Organiser Models ---
+class OrganiserElementType(str, enum.Enum):
+    DEPARTMENT = 'Department'
+    TEAM = 'Team'
+    ROLE = 'Role'
+    SOFTWARE = 'Software'
+    PROCESS = 'Process Step'
+
+class OrganiserElement(Base):
+    __tablename__ = "organiser_elements"
+    id = Column(String, primary_key=True, index=True)
+    parent_id = Column(String, ForeignKey("organiser_elements.id"), nullable=True)
+    type = Column(Enum(OrganiserElementType))
+    label = Column(String)
+    properties = Column(JSON, default={})
+    parent = relationship("OrganiserElement", remote_side=[id], back_populates="children")
+    children = relationship("OrganiserElement", back_populates="parent")
+
+# --- Docs Model ---
+class Doc(Base):
+    __tablename__ = "docs"
+    id = Column(String, primary_key=True, index=True)
+    parent_id = Column(String, ForeignKey("docs.id"), nullable=True)
+    title = Column(String)
+    icon = Column(String, nullable=True, default="📄")
+    content = Column(Text, nullable=True, default="")
+    parent = relationship("Doc", remote_side=[id], back_populates="children")
+    children = relationship("Doc", back_populates="parent")
+
+# --- ADD EVERYTHING BELOW THIS LINE ---
+
+# --- Requests (Ticket) Enums and Models ---
+class TicketStatus(str, enum.Enum):
+    OPEN = 'Open'
+    IN_PROGRESS = 'In Progress'
+    CLOSED = 'Closed'
+
+class Ticket(Base):
+    __tablename__ = "tickets"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True)
+    description = Column(Text, nullable=True)
+    status = Column(Enum(TicketStatus), default=TicketStatus.OPEN)
+    submitted_by = Column(Integer, ForeignKey("users.id"))
+    team_id = Column(String) # This could link to an OrganiserElement of type TEAM
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    submitter = relationship("User")
