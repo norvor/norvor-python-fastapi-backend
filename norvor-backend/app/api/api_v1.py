@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+# This line is the corrected part. We are importing the 'router' object.
 from ..users import router as users_router
 
 api_router = APIRouter()
