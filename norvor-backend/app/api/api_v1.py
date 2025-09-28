@@ -5,10 +5,16 @@ from ..pm.endpoints import router as pm_router
 from ..hr.endpoints import router as hr_router
 from ..organiser.endpoints import router as organiser_router
 from ..docs.endpoints import router as docs_router
+from ..auth.endpoints import router as auth_router # Import the auth router
+
 # Add this line to import the Requests router
 from ..requests.endpoints import router as requests_router
 
 api_router = APIRouter()
+
+# --- Authentication Router ---
+# This handles /login, /signup, etc.
+api_router.include_router(auth_router, tags=["Authentication"])
 
 # Include the users router
 api_router.include_router(users_router, prefix="/users", tags=["Users"])

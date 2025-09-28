@@ -26,16 +26,18 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
+    email = Column(String, unique=True, index=True)
+    hashed_password = Column(String) # ADD THIS LINE
     role = Column(Enum(UserRole))
     avatar = Column(String, nullable=True)
     manager_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     title = Column(String, nullable=True)
     department = Column(String)
-    email = Column(String, unique=True, index=True)
     phone = Column(String, nullable=True)
     address = Column(String, nullable=True)
     emergency_contact = Column(String, nullable=True)
     leave_balance = Column(JSON, nullable=True)
+    
     manager = relationship("User", remote_side=[id])
     projects = relationship("Project", back_populates="manager")
 
