@@ -1,17 +1,15 @@
 import sys
-import os
 from pathlib import Path
 
-# This adds the project root to the Python path.
-# It's now more robust because we'll run it as a module.
+# Add the project root to the Python path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-import json
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
+from app.database import SessionLocal, engine, Base
 from app import models
 from app.auth.security import get_password_hash
 from datetime import datetime
+
 
 
 # --- MOCK DATA IN PYTHON FORMAT ---
@@ -44,23 +42,14 @@ DEALS_DATA = [
   { "id": 205, "name": 'Fusion Data Analytics', "value": 60000, "stage": 'Lost', "contactId": 105, "ownerId": 5, "closeDate": '2024-07-10' },
 ]
 
-# --- SEEDING LOGIC ---
-
 def seed_data(db: Session):
-    # Clear existing data to prevent duplicates
-    db.query(models.Deal).delete()
-    db.query(models.Contact).delete()
-    db.query(models.User).delete()
-    db.commit()
-    print("Cleared existing data.")
-
     print("Seeding users...")
     for user_data in USERS_DATA:
         db_user = models.User(
             id=user_data['id'],
             name=user_data['name'],
             email=user_data['email'],
-            hashed_password="password123", # Default password for all
+            hashed_password=get_password_hash("password123"), # Default password for all
             role=user_data['role'],
             department=user_data['department'],
             title=user_data['title'],
@@ -100,10 +89,23 @@ def seed_data(db: Session):
     print("Seeding complete!")
 
 if __name__ == "__main__":
-    print("Starting database seeding process...")
+    print("--- Starting Database Reset and Seeding Process ---")
+
+    # --- THIS IS THE CRUCIAL FIX ---
+    print("Dropping all tables...")
+    # This command drops all tables in the correct order, respecting dependencies.
+    Base.metadata.drop_all(bind=engine)
+    print("Tables dropped.")
+
+    print("Creating all tables...")
+    # This command creates all tables in the correct order.
+    Base.metadata.create_all(bind=engine)
+    print("Tables created.")
+    # --------------------------------
+
     db = SessionLocal()
     try:
         seed_data(db)
     finally:
         db.close()
-        print("Database session closed.")
+        print("Database session closed. Process finished.")
