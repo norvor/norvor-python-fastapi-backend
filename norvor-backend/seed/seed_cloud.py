@@ -49,7 +49,7 @@ def seed_data(db: Session):
             id=user_data['id'],
             name=user_data['name'],
             email=user_data['email'],
-            hashed_password=get_password_hash("password123"), # Default password for all
+            hashed_password="password123", # Default password for all
             role=user_data['role'],
             department=user_data['department'],
             title=user_data['title'],
