@@ -13,8 +13,8 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship, declarative_base
 import enum
 from datetime import datetime
+from ..db.base import Base 
 
-Base = declarative_base()
 
 # --- User Model ---
 class UserRole(str, enum.Enum):

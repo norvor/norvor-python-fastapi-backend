@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from app.database import Base
+from app.db.base import Base 
 from app import models
 
 from alembic import context
