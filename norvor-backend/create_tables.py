@@ -5,7 +5,12 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent))
 
 from app.database import Base, engine
-from app import models
+
+# --- CRUCIAL FIX ---
+# We must explicitly import all the models here so that
+# SQLAlchemy's 'Base' object knows about them.
+from app.models import User, Organization, Contact, Deal, Project, Task, TimeOffRequest, OrganiserElement, Doc, Ticket
+# -------------------
 
 def init_db():
     print("Creating all database tables...")
