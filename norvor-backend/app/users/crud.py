@@ -25,20 +25,40 @@ def create_user(db: Session, user: schemas.UserCreate):
     """
     Create a new user in the database.
     """
-    # Hash the plain text password from the frontend
-    hashed_password = get_password_hash(user.password)
+    print("🔨 CRUD: Starting user creation...")
+    print(f"🔨 CRUD: Received data - Name: {user.name}, Email: {user.email}")
     
-    # Create the user model instance with the hashed password
-    db_user = models.User(
-        email=user.email,
-        name=user.name,
-        hashed_password=hashed_password,
-        role=user.role,
-        department=user.department,
-        avatar=user.avatar,
-        title=user.title
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
+    try:
+        # Hash the plain text password from the frontend
+        print("🔑 CRUD: Hashing password...")
+        hashed_password = get_password_hash(user.password)
+        print(f"🔑 CRUD: Password hashed successfully (length: {len(hashed_password)})")
+        
+        # Create the user model instance with the hashed password
+        print("👤 CRUD: Creating User model instance...")
+        db_user = models.User(
+            email=user.email,
+            name=user.name,
+            hashed_password=hashed_password,
+            role=user.role,
+            department=user.department,
+            avatar=user.avatar,
+            title=user.title
+        )
+        
+        print("💾 CRUD: Adding to database session...")
+        db.add(db_user)
+        
+        print("💾 CRUD: Committing to database...")
+        db.commit()
+        
+        print("🔄 CRUD: Refreshing user object...")
+        db.refresh(db_user)
+        
+        print(f"✅ CRUD: User created successfully with ID: {db_user.id}")
+        return db_user
+        
+    except Exception as e:
+        print(f"💥 CRUD ERROR: {type(e).__name__}: {str(e)}")
+        db.rollback()
+        raise e
