@@ -9,7 +9,7 @@ sys.path.append(str(project_root))
 print(f"Project root added to path: {project_root}")
 
 # Step 2: Now we can safely import from our app.
-from app.database import Base, engine
+from app.db.session import Base, engine
 
 # Step 3: We MUST explicitly import every model class here.
 # This is the most important step. It tells SQLAlchemy's Base object
