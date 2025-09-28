@@ -6,20 +6,19 @@ from ..models import UserRole
 class UserCreate(BaseModel):
     name: str
     email: EmailStr
-    password: str  # ADD THIS LINE
-    role: UserRole = UserRole.TEAM # Default new users to 'Team' role
-    department: str
-    avatar: Optional[str] = None
-    title: Optional[str] = None
+    password: str
+    organization_name: str # ADD THIS LINE
+    role: UserRole = UserRole.TEAM
+    department: str = "General" # Default new users to 'General' department
+    title: Optional[str] = "Team Member" # Default title
 
 # --- Properties to return via API ---
-# IMPORTANT: Notice this schema does NOT include the password.
-# We never want to send the password hash back to the client.
 class User(BaseModel):
     id: int
     name: str
     email: EmailStr
     role: UserRole
+    organization_id: int # ADD THIS LINE
     department: str
     avatar: Optional[str] = None
     title: Optional[str] = None

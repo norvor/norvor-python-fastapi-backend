@@ -22,12 +22,24 @@ class UserRole(str, enum.Enum):
     MANAGEMENT = "Management"
     EXECUTIVE = "Executive"
 
+# ADD THE NEW ORGANIZATION CLASS
+class Organization(Base):
+    __tablename__ = "organizations"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True, unique=True)
+    users = relationship("User", back_populates="organization")
+
+# UPDATE THE USER CLASS
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     email = Column(String, unique=True, index=True)
-    hashed_password = Column(String) # ADD THIS LINE
+    hashed_password = Column(String)
+    # --- ADD THESE TWO LINES ---
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    organization = relationship("Organization", back_populates="users")
+    # -------------------------
     role = Column(Enum(UserRole))
     avatar = Column(String, nullable=True)
     manager_id = Column(Integer, ForeignKey("users.id"), nullable=True)
@@ -37,7 +49,7 @@ class User(Base):
     address = Column(String, nullable=True)
     emergency_contact = Column(String, nullable=True)
     leave_balance = Column(JSON, nullable=True)
-    
+
     manager = relationship("User", remote_side=[id])
     projects = relationship("Project", back_populates="manager")
 

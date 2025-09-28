@@ -23,41 +23,30 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 
 def create_user(db: Session, user: schemas.UserCreate):
     """
-    Create a new user in the database.
+    Create a new organization and a new user as its first member.
     """
-    print("🔨 CRUD: Starting user creation...")
-    print(f"🔨 CRUD: Received data - Name: {user.name}, Email: {user.email}")
+    # 1. Create the Organization
+    db_org = models.Organization(name=user.organization_name)
+    db.add(db_org)
+    db.commit()
+    db.refresh(db_org)
+
+    # 2. Hash the user's password
+    hashed_password = get_password_hash(user.password)
     
-    try:
-        # Hash the plain text password from the frontend
-        print("🔑 CRUD: Hashing password...")
-        print(f"🔑 CRUD: Password hashed successfully (length: {len(hashed_password)})")
-        
-        # Create the user model instance with the hashed password
-        print("👤 CRUD: Creating User model instance...")
-        db_user = models.User(
-            email=user.email,
-            name=user.name,
-            hashed_password=hashed_password,
-            role=user.role,
-            department=user.department,
-            avatar=user.avatar,
-            title=user.title
-        )
-        
-        print("💾 CRUD: Adding to database session...")
-        db.add(db_user)
-        
-        print("💾 CRUD: Committing to database...")
-        db.commit()
-        
-        print("🔄 CRUD: Refreshing user object...")
-        db.refresh(db_user)
-        
-        print(f"✅ CRUD: User created successfully with ID: {db_user.id}")
-        return db_user
-        
-    except Exception as e:
-        print(f"💥 CRUD ERROR: {type(e).__name__}: {str(e)}")
-        db.rollback()
-        raise e
+    # 3. Create the User, linking them to the new organization
+    db_user = models.User(
+        email=user.email,
+        name=user.name,
+        hashed_password=hashed_password,
+        organization_id=db_org.id, # Link to the organization
+        # Set the first user as an Executive so they can manage the org
+        role=models.UserRole.EXECUTIVE, 
+        department=user.department,
+        title=user.title
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    
+    return db_user
