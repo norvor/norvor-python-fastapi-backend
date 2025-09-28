@@ -19,7 +19,9 @@ origins = [
     "http://localhost",
     "http://localhost:3000", # Default for local React dev
     "https://api.norvorx.com", # Your deployed API
-    "https://www.norvorx.com", # Your future frontend domain
+    "https://norvorx.com",
+    "https://www.norvorx.com",
+    "https://app.norvorx.com"# Your future frontend domain
 ]
 
 app.add_middleware(
