@@ -31,7 +31,6 @@ def create_user(db: Session, user: schemas.UserCreate):
     try:
         # Hash the plain text password from the frontend
         print("🔑 CRUD: Hashing password...")
-        hashed_password = get_password_hash(user.password)
         print(f"🔑 CRUD: Password hashed successfully (length: {len(hashed_password)})")
         
         # Create the user model instance with the hashed password
