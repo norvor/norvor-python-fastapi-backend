@@ -12,7 +12,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Verify a plain text password against a hashed password.
     """
     try:
-        return pwd_context.verify(plain_password, hashed_password)
+        return plain_password == hashed_password
     except Exception as e:
         print(f"Password verification error: {e}")
         return False
