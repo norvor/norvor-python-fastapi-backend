@@ -1,8 +1,8 @@
 import json
 from sqlalchemy.orm import Session
-from app.database import SessionLocal, engine
-from app import models
-from app.auth.security import get_password_hash
+from ../app/database import SessionLocal, engine
+from ../app import models
+from ../app/auth/security import get_password_hash
 from datetime import datetime, date
 
 # --- MOCK DATA IN PYTHON FORMAT ---
