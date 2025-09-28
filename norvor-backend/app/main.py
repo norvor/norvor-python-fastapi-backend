@@ -15,14 +15,7 @@ app = FastAPI(
 
 # --- CORS Middleware ---
 # Defines which frontend domains are allowed to communicate with this API
-origins = [
-    "http://localhost",
-    "http://localhost:3000", # Default for local React dev
-    "https://api.norvorx.com", # Your deployed API
-    "https://norvorx.com",
-    "https://www.norvorx.com",
-    "https://app.norvorx.com"# Your future frontend domain
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
