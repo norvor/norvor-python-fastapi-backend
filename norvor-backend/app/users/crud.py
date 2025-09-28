@@ -26,14 +26,12 @@ def create_user(db: Session, user: schemas.UserCreate):
     """
     Create a new user in the database.
     """
-    # Hash the password before creating the user object
-    hashed_password = get_password_hash(user.password)
     
     # Create the user model instance with the hashed password
     db_user = models.User(
         email=user.email,
         name=user.name,
-        hashed_password=hashed_password, # Store the hash, not the plain password
+        hashed_password=user.password, # Store the hash, not the plain password
         role=user.role,
         department=user.department,
         avatar=user.avatar,
