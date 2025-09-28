@@ -1,9 +1,18 @@
+import sys
+import os
+from pathlib import Path
+
+# This adds the project root to the Python path.
+# It's now more robust because we'll run it as a module.
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 import json
 from sqlalchemy.orm import Session
-from ../app/database import SessionLocal, engine
-from ../app import models
-from ../app/auth/security import get_password_hash
-from datetime import datetime, date
+from app.database import SessionLocal
+from app import models
+from app.auth.security import get_password_hash
+from datetime import datetime
+
 
 # --- MOCK DATA IN PYTHON FORMAT ---
 
@@ -51,7 +60,7 @@ def seed_data(db: Session):
             id=user_data['id'],
             name=user_data['name'],
             email=user_data['email'],
-            hashed_password="password123", # Default password for all
+            hashed_password=get_password_hash("password123"), # Default password for all
             role=user_data['role'],
             department=user_data['department'],
             title=user_data['title'],
