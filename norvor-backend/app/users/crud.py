@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 from . import schemas
 from .. import models
-# Import the password hashing function
 from ..auth.security import get_password_hash
 
 def get_user(db: Session, user_id: int):
@@ -26,12 +25,14 @@ def create_user(db: Session, user: schemas.UserCreate):
     """
     Create a new user in the database.
     """
+    # Hash the plain text password from the frontend
+    hashed_password = get_password_hash(user.password)
     
     # Create the user model instance with the hashed password
     db_user = models.User(
         email=user.email,
         name=user.name,
-        hashed_password=user.password, # Store the hash, not the plain password
+        hashed_password=hashed_password,
         role=user.role,
         department=user.department,
         avatar=user.avatar,
