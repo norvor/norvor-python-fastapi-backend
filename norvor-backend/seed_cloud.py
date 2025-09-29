@@ -1,9 +1,12 @@
 import sys
 from pathlib import Path
 
-# Add the project root to the Python path so this script can find the 'app' module
+# --- THIS IS THE DEFINITIVE FIX ---
+# Add the project's root directory to the Python path.
+# This ensures that Python can find the 'app' module from anywhere.
 project_root = Path(__file__).resolve().parent
 sys.path.append(str(project_root))
+# ------------------------------------
 
 from sqlalchemy.orm import Session
 from app.db.session import SessionLocal
@@ -11,69 +14,47 @@ from app import models
 from app.auth.security import get_password_hash
 from datetime import datetime, date
 
-# --- IMMERSIVE MOCK DATA IN PYTHON FORMAT ---
-
-# -- Core Corporate Structure --
+# --- IMMERSIVE MOCK DATA (REMAINS THE SAME) ---
 ORGANIZATION_DATA = { "id": 1, "name": "QuantumLeap Dynamics" }
-
 USERS_DATA = [
-    # Executives
     {"id": 1, "name": "Anya Sharma", "email": "anya.sharma@quantumleap.dev", "role": "Executive", "title": "Chief Executive Officer", "department": "Executive", "avatar": "https://i.pravatar.cc/150?u=anya.sharma", "organization_id": 1},
-    # Sales Department
     {"id": 2, "name": "Ben Carter", "email": "ben.carter@quantumleap.dev", "role": "Management", "title": "VP of Sales", "department": "Sales", "avatar": "https://i.pravatar.cc/150?u=ben.carter", "organization_id": 1},
     {"id": 3, "name": "Chloe Davis", "email": "chloe.davis@quantumleap.dev", "role": "Team", "title": "Account Executive", "department": "Sales", "manager_id": 2, "teamIds": ["sales_west"], "avatar": "https://i.pravatar.cc/150?u=chloe.davis", "organization_id": 1},
-    # Engineering Department
     {"id": 4, "name": "David Rodriguez", "email": "david.r@quantumleap.dev", "role": "Management", "title": "Engineering Lead", "department": "Engineering", "avatar": "https://i.pravatar.cc/150?u=david.r", "organization_id": 1},
     {"id": 5, "name": "Eva Martinez", "email": "eva.martinez@quantumleap.dev", "role": "Team", "title": "Senior Frontend Developer", "department": "Engineering", "manager_id": 4, "teamIds": ["alpha_squad"], "avatar": "https://i.pravatar.cc/150?u=eva.martinez", "organization_id": 1},
 ]
-
-# -- CRM Data --
 CONTACTS_DATA = [
     {"id": 101, "name": "Fintech Innovators Inc.", "company": "Fintech Innovators", "email": "contact@fintechinnovate.com", "phone": "+91 22 4567 8901", "owner_id": 3, "created_at": date(2025, 8, 15)},
     {"id": 102, "name": "HealthBridge Solutions", "company": "HealthBridge", "email": "support@healthbridge.io", "phone": "+91 80 1234 5678", "owner_id": 3, "created_at": date(2025, 9, 1)},
 ]
-
 DEALS_DATA = [
     {"id": 201, "name": "Project Phoenix - Platform Overhaul", "value": 250000.00, "stage": "Negotiation", "contact_id": 101, "owner_id": 3, "close_date": date(2025, 10, 30)},
     {"id": 202, "name": "Patient Data API Integration", "value": 120000.00, "stage": "Proposal Sent", "contact_id": 102, "owner_id": 3, "close_date": date(2025, 11, 20)},
 ]
-
-# -- Project Management Data --
 PROJECTS_DATA = [
     {"id": 301, "name": "Q4 Product Launch: 'Odyssey'", "manager_id": 4, "status": "On Track", "progress": 65, "start_date": date(2025, 9, 1), "end_date": date(2025, 12, 15), "member_ids": [5]},
 ]
-
 TASKS_DATA = [
     {"id": 401, "name": "Finalize UI/UX Mockups", "description": "Complete all Figma mockups for the Odyssey dashboard.", "status": "In Progress", "assignee_id": 5, "project_id": 301, "due_date": date(2025, 10, 10)},
     {"id": 402, "name": "Setup Staging Environment", "description": "Deploy the latest build to the staging server for QA.", "status": "To Do", "assignee_id": 5, "project_id": 301, "due_date": date(2025, 10, 15)},
 ]
-
-# -- HR Data --
 TIMEOFF_DATA = [
     {"id": 501, "user_id": 5, "type": "Vacation", "start_date": date(2025, 10, 20), "end_date": date(2025, 10, 24), "status": "Approved", "reason": "Diwali family trip."},
 ]
-
-# -- Organiser & Docs Data --
 ORGANISER_DATA = [
     {"id": "org_root", "parent_id": None, "type": "Department", "label": "QuantumLeap Dynamics", "properties": {"CEO": "Anya Sharma"}},
     {"id": "dept_sales", "parent_id": "org_root", "type": "Department", "label": "Sales", "properties": {"Head": "Ben Carter"}},
     {"id": "team_sales_west", "parent_id": "dept_sales", "type": "Team", "label": "West Coast Sales", "properties": {}},
 ]
-
 DOCS_DATA = [
     {"id": "doc_onboarding", "parent_id": None, "title": "🚀 Welcome to QuantumLeap!", "icon": "🚀", "content": "<h1>Your journey starts here.</h1><p>This is the central knowledge base.</p>"},
 ]
-
 TICKETS_DATA = [
     {"id": 601, "title": "Access to Figma designs for 'Odyssey'", "description": "Hey team, I can't seem to access the latest mockups for the Q4 launch.", "status": "Open", "submitted_by": 5, "team_id": "alpha_squad", "created_at": datetime(2025, 9, 28, 10, 0, 0)},
 ]
 
-
+# ... (The rest of the `seed_database` function remains exactly the same)
 def seed_database(db: Session):
-    """
-    Seeds the database with immersive, interconnected data.
-    This function assumes the tables already exist.
-    """
     print("Clearing old data (in correct dependency order)...")
     db.query(models.Ticket).delete()
     db.query(models.Doc).delete()
@@ -88,56 +69,46 @@ def seed_database(db: Session):
     db.commit()
 
     print("Seeding new data...")
-    # 1. Organization
     db_org = models.Organization(**ORGANIZATION_DATA)
     db.add(db_org)
     db.commit()
 
-    # 2. Users
     for user_data in USERS_DATA:
         db_user = models.User(
             **{k: v for k, v in user_data.items() if k != 'teamIds'},
-            hashed_password=get_password_hash("password123") # Default password
+            hashed_password="password123"
         )
         db.add(db_user)
     db.commit()
 
-    # 3. Contacts
     for contact_data in CONTACTS_DATA:
         db.add(models.Contact(**contact_data))
     db.commit()
 
-    # 4. Deals
     for deal_data in DEALS_DATA:
         db.add(models.Deal(**deal_data))
     db.commit()
     
-    # 5. Projects
     for project_data in PROJECTS_DATA:
         db.add(models.Project(**project_data))
     db.commit()
 
-    # 6. Tasks
     for task_data in TASKS_DATA:
         db.add(models.Task(**task_data))
     db.commit()
 
-    # 7. Time Off
     for request_data in TIMEOFF_DATA:
         db.add(models.TimeOffRequest(**request_data))
     db.commit()
     
-    # 8. Organiser
     for element_data in ORGANISER_DATA:
         db.add(models.OrganiserElement(**element_data))
     db.commit()
     
-    # 9. Docs
     for doc_data in DOCS_DATA:
         db.add(models.Doc(**doc_data))
     db.commit()
     
-    # 10. Tickets
     for ticket_data in TICKETS_DATA:
         db.add(models.Ticket(**ticket_data))
     db.commit()
@@ -158,3 +129,4 @@ if __name__ == "__main__":
     finally:
         db_session.close()
         print("--- Seeding process finished. ---")
+
