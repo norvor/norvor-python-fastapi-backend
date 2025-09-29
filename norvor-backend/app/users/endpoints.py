@@ -59,6 +59,12 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
+@router.get("/me", response_model=schemas.User)
+def read_users_me(current_user: schemas.User = Depends(get_current_user)):
+    """
+    Fetch the currently logged-in user.
+    """
+    return current_user
 
 @router.get("/{user_id}", response_model=schemas.User)
 def read_user(user_id: int, db: Session = Depends(get_db)):
@@ -70,9 +76,3 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
-@router.get("/me", response_model=schemas.User)
-def read_users_me(current_user: schemas.User = Depends(get_current_user)):
-    """
-    Fetch the currently logged-in user.
-    """
-    return current_user
