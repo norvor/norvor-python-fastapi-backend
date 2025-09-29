@@ -1,111 +1,160 @@
 import sys
 from pathlib import Path
 
-# Add the project root to the Python path
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+# Add the project root to the Python path so this script can find the 'app' module
+project_root = Path(__file__).resolve().parent
+sys.path.append(str(project_root))
 
 from sqlalchemy.orm import Session
-from app.database import SessionLocal, engine, Base
+from app.db.session import SessionLocal
 from app import models
 from app.auth.security import get_password_hash
-from datetime import datetime
+from datetime import datetime, date
 
+# --- IMMERSIVE MOCK DATA IN PYTHON FORMAT ---
 
-
-# --- MOCK DATA IN PYTHON FORMAT ---
+# -- Core Corporate Structure --
+ORGANIZATION_DATA = { "id": 1, "name": "QuantumLeap Dynamics" }
 
 USERS_DATA = [
-  { "id": 1, "name": 'Alex Johnson', "role": 'Team', "avatar": 'https://picsum.photos/id/1005/200/200', "managerId": 3, "teamIds": ['bd1'], "title": 'Sales Representative', "department": 'Sales', "email": 'alex.j@norvor.com' },
-  { "id": 2, "name": 'Brenda Smith', "role": 'Team', "avatar": 'https://picsum.photos/id/1011/200/200', "managerId": 3, "teamIds": ['bd1'], "title": 'Sales Representative', "department": 'Sales', "email": 'brenda.s@norvor.com' },
-  { "id": 3, "name": 'Charles Brown', "role": 'Management', "avatar": 'https://picsum.photos/id/1025/200/200', "teamIds": ['bd1'], "title": 'Sales Manager', "department": 'Sales', "email": 'charles.b@norvor.com' },
-  { "id": 4, "name": 'Diana Green', "role": 'Executive', "avatar": 'https://picsum.photos/id/1027/200/200', "teamIds": ['bd1', 'eng1', 'eng2'], "title": 'CEO', "department": 'Executive', "email": 'diana.g@norvor.com' },
-  { "id": 5, "name": 'Ethan Hunt', "role": 'Team', "avatar": 'https://picsum.photos/id/10/200/200', "managerId": 3, "teamIds": ['eng1'], "title": 'Software Engineer', "department": 'Engineering', "email": 'ethan.h@norvor.com' },
-  { "id": 6, "name": 'Fiona Glenanne', "role": 'Team', "avatar": 'https://picsum.photos/id/20/200/200', "managerId": 3, "teamIds": ['eng2'], "title": 'Software Engineer', "department": 'Engineering', "email": 'fiona.g@norvor.com' },
-  { "id": 7, "name": 'George Mason', "role": 'Management', "avatar": 'https://picsum.photos/id/30/200/200', "teamIds": ['eng1', 'eng2'], "title": 'Engineering Manager', "department": 'Engineering', "email": 'george.m@norvor.com' },
+    # Executives
+    {"id": 1, "name": "Anya Sharma", "email": "anya.sharma@quantumleap.dev", "role": "Executive", "title": "Chief Executive Officer", "department": "Executive", "avatar": "https://i.pravatar.cc/150?u=anya.sharma", "organization_id": 1},
+    # Sales Department
+    {"id": 2, "name": "Ben Carter", "email": "ben.carter@quantumleap.dev", "role": "Management", "title": "VP of Sales", "department": "Sales", "avatar": "https://i.pravatar.cc/150?u=ben.carter", "organization_id": 1},
+    {"id": 3, "name": "Chloe Davis", "email": "chloe.davis@quantumleap.dev", "role": "Team", "title": "Account Executive", "department": "Sales", "manager_id": 2, "teamIds": ["sales_west"], "avatar": "https://i.pravatar.cc/150?u=chloe.davis", "organization_id": 1},
+    # Engineering Department
+    {"id": 4, "name": "David Rodriguez", "email": "david.r@quantumleap.dev", "role": "Management", "title": "Engineering Lead", "department": "Engineering", "avatar": "https://i.pravatar.cc/150?u=david.r", "organization_id": 1},
+    {"id": 5, "name": "Eva Martinez", "email": "eva.martinez@quantumleap.dev", "role": "Team", "title": "Senior Frontend Developer", "department": "Engineering", "manager_id": 4, "teamIds": ["alpha_squad"], "avatar": "https://i.pravatar.cc/150?u=eva.martinez", "organization_id": 1},
 ]
 
+# -- CRM Data --
 CONTACTS_DATA = [
-  { "id": 101, "name": 'InnoTech Solutions', "company": 'InnoTech', "email": 'contact@innotech.com', "phone": '555-0101', "ownerId": 1, "createdAt": '2023-10-01' },
-  { "id": 102, "name": 'Quantum Dynamics', "company": 'Quantum', "email": 'info@quantum.com', "phone": '555-0102', "ownerId": 1, "createdAt": '2023-10-05' },
-  { "id": 103, "name": 'Apex Innovations', "company": 'Apex', "email": 'sales@apex.com', "phone": '555-0103', "ownerId": 2, "createdAt": '2023-10-10' },
-  { "id": 104, "name": 'Stellar Corp', "company": 'Stellar', "phone": '555-0104', "ownerId": 2, "createdAt": '2023-10-12', "email": 'support@stellar.com' },
-  { "id": 105, "name": 'Fusion Enterprises', "company": 'Fusion', "email": 'hello@fusion.com', "phone": '555-0105', "ownerId": 5, "createdAt": '2023-10-15' },
-  { "id": 106, "name": 'Zenith Systems', "company": 'Zenith', "email": 'connect@zenith.com', "phone": '555-0106', "ownerId": None, "createdAt": '2023-10-20' },
-  { "id": 107, "name": 'Nova Industries', "company": 'Nova', "email": 'inquiries@nova.com', "phone": '555-0107', "ownerId": None, "createdAt": '2023-10-22' },
+    {"id": 101, "name": "Fintech Innovators Inc.", "company": "Fintech Innovators", "email": "contact@fintechinnovate.com", "phone": "+91 22 4567 8901", "owner_id": 3, "created_at": date(2025, 8, 15)},
+    {"id": 102, "name": "HealthBridge Solutions", "company": "HealthBridge", "email": "support@healthbridge.io", "phone": "+91 80 1234 5678", "owner_id": 3, "created_at": date(2025, 9, 1)},
 ]
 
 DEALS_DATA = [
-  { "id": 201, "name": 'InnoTech Website Relaunch', "value": 50000, "stage": 'Proposal Sent', "contactId": 101, "ownerId": 1, "closeDate": '2024-08-30' },
-  { "id": 202, "name": 'Quantum AI Integration', "value": 75000, "stage": 'Negotiation', "contactId": 102, "ownerId": 1, "closeDate": '2024-09-15' },
-  { "id": 203, "name": 'Apex Cloud Migration', "value": 30000, "stage": 'Won', "contactId": 103, "ownerId": 2, "closeDate": '2024-07-20' },
-  { "id": 204, "name": 'Stellar Marketing Campaign', "value": 25000, "stage": 'New Lead', "contactId": 104, "ownerId": 2, "closeDate": '2024-09-01' },
-  { "id": 205, "name": 'Fusion Data Analytics', "value": 60000, "stage": 'Lost', "contactId": 105, "ownerId": 5, "closeDate": '2024-07-10' },
+    {"id": 201, "name": "Project Phoenix - Platform Overhaul", "value": 250000.00, "stage": "Negotiation", "contact_id": 101, "owner_id": 3, "close_date": date(2025, 10, 30)},
+    {"id": 202, "name": "Patient Data API Integration", "value": 120000.00, "stage": "Proposal Sent", "contact_id": 102, "owner_id": 3, "close_date": date(2025, 11, 20)},
 ]
 
-def seed_data(db: Session):
-    print("Seeding users...")
+# -- Project Management Data --
+PROJECTS_DATA = [
+    {"id": 301, "name": "Q4 Product Launch: 'Odyssey'", "manager_id": 4, "status": "On Track", "progress": 65, "start_date": date(2025, 9, 1), "end_date": date(2025, 12, 15), "member_ids": [5]},
+]
+
+TASKS_DATA = [
+    {"id": 401, "name": "Finalize UI/UX Mockups", "description": "Complete all Figma mockups for the Odyssey dashboard.", "status": "In Progress", "assignee_id": 5, "project_id": 301, "due_date": date(2025, 10, 10)},
+    {"id": 402, "name": "Setup Staging Environment", "description": "Deploy the latest build to the staging server for QA.", "status": "To Do", "assignee_id": 5, "project_id": 301, "due_date": date(2025, 10, 15)},
+]
+
+# -- HR Data --
+TIMEOFF_DATA = [
+    {"id": 501, "user_id": 5, "type": "Vacation", "start_date": date(2025, 10, 20), "end_date": date(2025, 10, 24), "status": "Approved", "reason": "Diwali family trip."},
+]
+
+# -- Organiser & Docs Data --
+ORGANISER_DATA = [
+    {"id": "org_root", "parent_id": None, "type": "Department", "label": "QuantumLeap Dynamics", "properties": {"CEO": "Anya Sharma"}},
+    {"id": "dept_sales", "parent_id": "org_root", "type": "Department", "label": "Sales", "properties": {"Head": "Ben Carter"}},
+    {"id": "team_sales_west", "parent_id": "dept_sales", "type": "Team", "label": "West Coast Sales", "properties": {}},
+]
+
+DOCS_DATA = [
+    {"id": "doc_onboarding", "parent_id": None, "title": "🚀 Welcome to QuantumLeap!", "icon": "🚀", "content": "<h1>Your journey starts here.</h1><p>This is the central knowledge base.</p>"},
+]
+
+TICKETS_DATA = [
+    {"id": 601, "title": "Access to Figma designs for 'Odyssey'", "description": "Hey team, I can't seem to access the latest mockups for the Q4 launch.", "status": "Open", "submitted_by": 5, "team_id": "alpha_squad", "created_at": datetime(2025, 9, 28, 10, 0, 0)},
+]
+
+
+def seed_database(db: Session):
+    """
+    Seeds the database with immersive, interconnected data.
+    This function assumes the tables already exist.
+    """
+    print("Clearing old data (in correct dependency order)...")
+    db.query(models.Ticket).delete()
+    db.query(models.Doc).delete()
+    db.query(models.OrganiserElement).delete()
+    db.query(models.TimeOffRequest).delete()
+    db.query(models.Task).delete()
+    db.query(models.Project).delete()
+    db.query(models.Deal).delete()
+    db.query(models.Contact).delete()
+    db.query(models.User).delete()
+    db.query(models.Organization).delete()
+    db.commit()
+
+    print("Seeding new data...")
+    # 1. Organization
+    db_org = models.Organization(**ORGANIZATION_DATA)
+    db.add(db_org)
+    db.commit()
+
+    # 2. Users
     for user_data in USERS_DATA:
         db_user = models.User(
-            id=user_data['id'],
-            name=user_data['name'],
-            email=user_data['email'],
-            hashed_password="password123", # Default password for all
-            role=user_data['role'],
-            department=user_data['department'],
-            title=user_data['title'],
-            avatar=user_data['avatar']
+            **{k: v for k, v in user_data.items() if k != 'teamIds'},
+            hashed_password=get_password_hash("password123") # Default password
         )
         db.add(db_user)
     db.commit()
 
-    print("Seeding contacts...")
+    # 3. Contacts
     for contact_data in CONTACTS_DATA:
-        db_contact = models.Contact(
-            id=contact_data['id'],
-            name=contact_data['name'],
-            company=contact_data['company'],
-            email=contact_data['email'],
-            phone=contact_data['phone'],
-            owner_id=contact_data['ownerId'],
-            created_at=datetime.strptime(contact_data['createdAt'], '%Y-%m-%d').date()
-        )
-        db.add(db_contact)
+        db.add(models.Contact(**contact_data))
     db.commit()
 
-    print("Seeding deals...")
+    # 4. Deals
     for deal_data in DEALS_DATA:
-        db_deal = models.Deal(
-            id=deal_data['id'],
-            name=deal_data['name'],
-            value=deal_data['value'],
-            stage=deal_data['stage'],
-            contact_id=deal_data['contactId'],
-            owner_id=deal_data['ownerId'],
-            close_date=datetime.strptime(deal_data['closeDate'], '%Y-%m-%d').date()
-        )
-        db.add(db_deal)
+        db.add(models.Deal(**deal_data))
+    db.commit()
+    
+    # 5. Projects
+    for project_data in PROJECTS_DATA:
+        db.add(models.Project(**project_data))
     db.commit()
 
-    print("Seeding complete!")
+    # 6. Tasks
+    for task_data in TASKS_DATA:
+        db.add(models.Task(**task_data))
+    db.commit()
+
+    # 7. Time Off
+    for request_data in TIMEOFF_DATA:
+        db.add(models.TimeOffRequest(**request_data))
+    db.commit()
+    
+    # 8. Organiser
+    for element_data in ORGANISER_DATA:
+        db.add(models.OrganiserElement(**element_data))
+    db.commit()
+    
+    # 9. Docs
+    for doc_data in DOCS_DATA:
+        db.add(models.Doc(**doc_data))
+    db.commit()
+    
+    # 10. Tickets
+    for ticket_data in TICKETS_DATA:
+        db.add(models.Ticket(**ticket_data))
+    db.commit()
+
+    print("\n✅ Database seeding complete!")
+    print("You can log in with any user's email (e.g., 'anya.sharma@quantumleap.dev').")
+    print("The password for all users is: password123")
+
 
 if __name__ == "__main__":
-    print("--- Starting Database Reset and Seeding Process ---")
-
-    # --- THIS IS THE CRUCIAL FIX ---
-    print("Dropping all tables...")
-    # This command drops all tables in the correct order, respecting dependencies.
-    Base.metadata.drop_all(bind=engine)
-    print("Tables dropped.")
-
-    print("Creating all tables...")
-    # This command creates all tables in the correct order.
-    Base.metadata.create_all(bind=engine)
-    print("Tables created.")
-    # --------------------------------
-    
-    db = SessionLocal()
+    print("--- Starting Database Seeding ---")
+    db_session = SessionLocal()
     try:
-        seed_data(db)
+        seed_database(db_session)
+    except Exception as e:
+        print(f"\nAn error occurred during seeding: {e}")
+        db_session.rollback()
     finally:
-        db.close()
-        print("Database session closed. Process finished.")
+        db_session.close()
+        print("--- Seeding process finished. ---")
