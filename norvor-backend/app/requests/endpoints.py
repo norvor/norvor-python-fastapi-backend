@@ -9,6 +9,14 @@ from ..users.crud import get_user # To validate the submitter exists
 
 router = APIRouter()
 
+@router.get("/tickets/", response_model=List[schemas.Ticket]) 
+def read_all_tickets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Retrieve all tickets. (Used by frontend Redux store)
+    """
+    tickets = crud.get_all_tickets(db, skip=skip, limit=limit)
+    return tickets
+
 @router.post("/tickets/", response_model=schemas.Ticket)
 def create_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db)):
     """

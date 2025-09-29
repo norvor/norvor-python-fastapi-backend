@@ -41,3 +41,9 @@ def update_ticket_status(db: Session, ticket_id: int, status: models.TicketStatu
         db.commit()
         db.refresh(db_ticket)
     return db_ticket
+
+def get_all_tickets(db: Session, skip: int = 0, limit: int = 100):
+    """
+    Get a list of all tickets.
+    """
+    return db.query(models.Ticket).offset(skip).limit(limit).all()
