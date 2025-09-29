@@ -1,3 +1,4 @@
+# norvor-backend/app/crm/crud.py
 from sqlalchemy.orm import Session
 from . import schemas
 from .. import models
@@ -71,3 +72,21 @@ def get_deals(db: Session, skip: int = 0, limit: int = 100):
     Get a list of all deals.
     """
     return db.query(models.Deal).offset(skip).limit(limit).all()
+
+
+# --- Activity CRUD Functions (MUST BE PRESENT) ---
+def create_activity(db: Session, activity: schemas.ActivityCreate):
+    """
+    Create a new activity in the database.
+    """
+    db_activity = models.Activity(**activity.dict())
+    db.add(db_activity)
+    db.commit()
+    db.refresh(db_activity)
+    return db_activity
+
+def get_activities(db: Session, skip: int = 0, limit: int = 100):
+    """
+    Get a list of all activities.
+    """
+    return db.query(models.Activity).offset(skip).limit(limit).all()
