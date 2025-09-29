@@ -8,7 +8,8 @@ from sqlalchemy import (
     ForeignKey,
     JSON,
     Text,
-    DateTime, # Import DateTime for timestamps
+    DateTime, 
+    Boolean # --- ADD THIS IMPORT ---
 )
 from sqlalchemy.orm import relationship, declarative_base
 import enum
@@ -21,11 +22,12 @@ class UserRole(str, enum.Enum):
     MANAGEMENT = "Management"
     EXECUTIVE = "Executive"
 
-# ADD THE NEW ORGANIZATION CLASS
 class Organization(Base):
     __tablename__ = "organizations"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, unique=True)
+    # --- ADD THIS LINE ---
+    has_completed_onboarding = Column(Boolean, default=False)
     users = relationship("User", back_populates="organization")
 
 # UPDATE THE USER CLASS
@@ -35,10 +37,8 @@ class User(Base):
     name = Column(String, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
-    # --- ADD THESE TWO LINES ---
     organization_id = Column(Integer, ForeignKey("organizations.id"))
     organization = relationship("Organization", back_populates="users")
-    # -------------------------
     role = Column(Enum(UserRole))
     avatar = Column(String, nullable=True)
     manager_id = Column(Integer, ForeignKey("users.id"), nullable=True)
@@ -143,12 +143,15 @@ class TimeOffRequest(Base):
     user = relationship("User")
 
 # --- Organiser Models ---
+# --- MODIFY THIS ENUM ---
 class OrganiserElementType(str, enum.Enum):
     DEPARTMENT = 'Department'
     TEAM = 'Team'
-    ROLE = 'Role'
+    # TEAM_LEAD is not a structural element, but a property of a TEAM.
+    # We will store the team_leader_id in the properties dict of the TEAM element.
     SOFTWARE = 'Software'
-    PROCESS = 'Process Step'
+    NORVOR_TOOL = 'Norvor Tool'
+# -------------------------
 
 class OrganiserElement(Base):
     __tablename__ = "organiser_elements"
@@ -171,9 +174,7 @@ class Doc(Base):
     parent = relationship("Doc", remote_side=[id], back_populates="children")
     children = relationship("Doc", back_populates="parent")
 
-# --- ADD EVERYTHING BELOW THIS LINE ---
-
-class ActivityType(str, enum.Enum): # <--- This is the missing type
+class ActivityType(str, enum.Enum):
     CALL = 'Call'
     EMAIL = 'Email'
     MEETING = 'Meeting'
@@ -203,7 +204,7 @@ class Ticket(Base):
     description = Column(Text, nullable=True)
     status = Column(Enum(TicketStatus), default=TicketStatus.OPEN)
     submitted_by = Column(Integer, ForeignKey("users.id"))
-    team_id = Column(String) # This could link to an OrganiserElement of type TEAM
+    team_id = Column(String) 
     created_at = Column(DateTime, default=datetime.utcnow)
     
     submitter = relationship("User")

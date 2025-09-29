@@ -2,16 +2,26 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 from ..models import UserRole
 
-# --- Properties to receive via API on creation ---
+# --- Properties to receive via API on public creation ---
 class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str
-    organization_name: str # ADD THIS LINE
+    organization_name: str 
     role: UserRole = UserRole.TEAM
-    department: str = "General" # Default new users to 'General' department
-    title: Optional[str] = "Team Member" # Default title
+    department: str = "General" 
+    title: Optional[str] = "Team Member" 
 
+# --- ADD THIS NEW CLASS ---
+# Properties for an Admin creating a user within their own org
+class UserCreateByAdmin(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    role: UserRole
+    department: str
+    title: Optional[str] = None
+# -------------------------
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
@@ -19,7 +29,7 @@ class UserUpdate(BaseModel):
     role: Optional[UserRole] = None
     department: Optional[str] = None
     title: Optional[str] = None
-    organization_id: Optional[int] = None  # Add this line if needed
+    organization_id: Optional[int] = None
 
 
 # --- Properties to return via API ---
@@ -28,7 +38,7 @@ class User(BaseModel):
     name: str
     email: EmailStr
     role: UserRole
-    organization_id: int # ADD THIS LINE
+    organization_id: int
     department: str
     avatar: Optional[str] = None
     title: Optional[str] = None

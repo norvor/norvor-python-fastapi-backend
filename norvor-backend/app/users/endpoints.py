@@ -5,51 +5,41 @@ from typing import List
 from . import crud, schemas
 from ..db.session import get_db
 from ..auth.security import get_current_user
+from .. import models # --- ADD THIS IMPORT ---
 
 router = APIRouter()
 
+# This is the PUBLIC signup endpoint
 @router.post("/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     """
-    Create a new user.
+    Create a new user and organization.
     """
-    print("=" * 50)
-    print("SIGNUP DEBUG START")
-    print(f"Name: {user.name}")
-    print(f"Email: {user.email}")
-    print(f"Password: {user.password}")
-    print(f"Password length: {len(user.password)}")
-    print(f"Department: {user.department}")
-    print(f"Role: {user.role}")
-    
-    # Check if email already exists
-    try:
-        db_user = crud.get_user_by_email(db, email=user.email)
-        if db_user:
-            print(f"❌ Email already registered: {user.email}")
-            raise HTTPException(status_code=400, detail="Email already registered")
-        
-        print("✅ Email is available")
-        
-        # Try to create the user
-        print("🔨 Attempting to create user...")
-        created_user = crud.create_user(db=db, user=user)
-        print(f"✅ User created successfully with ID: {created_user.id}")
-        
-        return created_user
-        
-    except HTTPException as he:
-        print(f"💥 HTTP Exception: {he.detail}")
-        raise he
-    except Exception as e:
-        print(f"💥 Unexpected error during signup: {type(e).__name__}: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
-    finally:
-        print("SIGNUP DEBUG END")
-        print("=" * 50)
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(db=db, user=user)
 
+# --- ADD THIS NEW ENDPOINT ---
+@router.post("/create_by_admin", response_model=schemas.User)
+def create_user_by_admin(
+    user: schemas.UserCreateByAdmin, 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Create a new user within the current admin's organization.
+    """
+    # Simple security check for now, will be enhanced in the RBAC phase
+    if current_user.role != models.UserRole.EXECUTIVE:
+        raise HTTPException(status_code=403, detail="Not authorized to create users")
+        
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+        
+    return crud.create_user_by_admin(db=db, user=user, organization_id=current_user.organization_id)
+# --------------------------------
 
 @router.get("/", response_model=List[schemas.User])
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -85,4 +75,3 @@ def update_user_details(user_id: int, user_update: schemas.UserUpdate, db: Sessi
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
-
