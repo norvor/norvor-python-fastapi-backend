@@ -16,6 +16,13 @@ from datetime import datetime, date
 
 # --- IMMERSIVE MOCK DATA (REMAINS THE SAME) ---
 ORGANIZATION_DATA = { "id": 1, "name": "QuantumLeap Dynamics" }
+
+ACTIVITIES_DATA = [
+    {"id": 1001, "type": "Call", "notes": "Initial discovery call with Fintech Innovators.", "date": date(2025, 9, 20), "contact_id": 101, "user_id": 3},
+    {"id": 1002, "type": "Email", "notes": "Sent Project Phoenix proposal to Fintech.", "date": date(2025, 9, 25), "contact_id": 101, "user_id": 3},
+    {"id": 1003, "type": "Meeting", "notes": "Met with HealthBridge team to discuss integration.", "date": date(2025, 9, 28), "contact_id": 102, "user_id": 3},
+]
+
 USERS_DATA = [
     {"id": 1, "name": "Anya Sharma", "email": "anya.sharma@quantumleap.dev", "role": "Executive", "title": "Chief Executive Officer", "department": "Executive", "avatar": "https://i.pravatar.cc/150?u=anya.sharma", "organization_id": 1},
     {"id": 2, "name": "Ben Carter", "email": "ben.carter@quantumleap.dev", "role": "Management", "title": "VP of Sales", "department": "Sales", "avatar": "https://i.pravatar.cc/150?u=ben.carter", "organization_id": 1},
@@ -112,6 +119,10 @@ def seed_database(db: Session):
     
     for ticket_data in TICKETS_DATA:
         db.add(models.Ticket(**ticket_data))
+    db.commit()
+
+    for activity_data in ACTIVITIES_DATA:
+        db.add(models.Activity(**activity_data))
     db.commit()
 
     print("\n✅ Database seeding complete!")
