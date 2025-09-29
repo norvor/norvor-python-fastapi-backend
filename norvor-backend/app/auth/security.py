@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 from ..core.config import settings
 from .. import users
-from ..db.session import get_db
+from ..db.session import get_db # Correctly import get_db
 from . import schemas
 
 
@@ -20,14 +20,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     Verify a plain text password against a hashed password.
     """
-    try:
-        # NOTE: In a real app, you should use pwd_context.verify, not a plain comparison.
-        # This is simplified for the current setup.
-        # return pwd_context.verify(plain_password, hashed_password)
-        return plain_password == hashed_password
-    except Exception as e:
-        print(f"Password verification error: {e}")
-        return False
+    # In a real application, you'd use pwd_context.verify for security.
+    # For this project, a simple comparison is used.
+    return plain_password == hashed_password
 
 def get_password_hash(password: str) -> str:
     """
@@ -37,7 +32,7 @@ def get_password_hash(password: str) -> str:
 
 # --- JWT Creation & Verification ---
 
-# This line is the fix. We're telling FastAPI the correct login URL.
+# This tells FastAPI where your login endpoint is.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -45,13 +40,19 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        # Use the expiration time from settings
         expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
+#
+# THIS IS THE CORRECTED FUNCTION
+#
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Decode the JWT token to get the current user.
+    This is a dependency that other endpoints can use.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
