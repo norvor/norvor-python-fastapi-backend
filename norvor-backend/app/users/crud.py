@@ -50,3 +50,19 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     
     return db_user
+
+def update_user(db: Session, user_id: int, user_update: schemas.UserUpdate):
+    """
+    Update an existing user's details (e.g., role, name).
+    """
+    db_user = get_user(db, user_id=user_id)
+    if db_user:
+        # Get update data, excluding unset fields and ensuring we don't accidentally update sensitive fields
+        update_data = user_update.dict(exclude_unset=True, exclude_none=True)
+        
+        for key, value in update_data.items():
+            setattr(db_user, key, value)
+            
+        db.commit()
+        db.refresh(db_user)
+    return db_user

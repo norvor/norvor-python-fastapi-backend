@@ -76,3 +76,13 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
+@router.put("/{user_id}", response_model=schemas.User)
+def update_user_details(user_id: int, user_update: schemas.UserUpdate, db: Session = Depends(get_db)):
+    """
+    Update an existing user's details (Used for role and permission management).
+    """
+    db_user = crud.update_user(db, user_id=user_id, user_update=user_update)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+

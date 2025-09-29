@@ -12,6 +12,15 @@ class UserCreate(BaseModel):
     department: str = "General" # Default new users to 'General' department
     title: Optional[str] = "Team Member" # Default title
 
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    role: Optional[UserRole] = None
+    department: Optional[str] = None
+    title: Optional[str] = None
+
+    
 # --- Properties to return via API ---
 class User(BaseModel):
     id: int
