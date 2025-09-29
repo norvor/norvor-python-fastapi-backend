@@ -79,3 +79,4 @@ def update_user_details(user_id: int, user_update: schemas.UserUpdate, db: Sessi
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
+    
