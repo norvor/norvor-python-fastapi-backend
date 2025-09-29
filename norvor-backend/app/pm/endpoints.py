@@ -58,3 +58,11 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=f"Assignee with id {task.assignee_id} not found")
 
     return crud.create_task(db=db, task=task)
+
+@router.get("/tasks/", response_model=List[schemas.Task])
+def read_tasks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Retrieve all tasks.
+    """
+    tasks = crud.get_all_tasks(db, skip=skip, limit=limit)
+    return tasks
