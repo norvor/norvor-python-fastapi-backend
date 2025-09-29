@@ -73,7 +73,7 @@ def seed_database(db: Session):
     db.query(models.Contact).delete()
     db.query(models.User).delete()
     db.query(models.Organization).delete()
-    db.query(models.Activity).delete()  # Clear activities last
+    db.query(models.Activity).delete() # Clear activities last
     db.commit()
 
     print("Seeding new data...")

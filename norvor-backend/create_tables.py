@@ -27,7 +27,8 @@ from app.models import (
     TimeOffRequest,
     OrganiserElement,
     Doc,
-    Ticket
+    Ticket,
+    Activity,# <--- Import the missing type
 )
 print("Models imported successfully.")
 
