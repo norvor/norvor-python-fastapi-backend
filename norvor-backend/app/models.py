@@ -173,6 +173,23 @@ class Doc(Base):
 
 # --- ADD EVERYTHING BELOW THIS LINE ---
 
+class ActivityType(str, enum.Enum): # <--- This is the missing type
+    CALL = 'Call'
+    EMAIL = 'Email'
+    MEETING = 'Meeting'
+
+class Activity(Base):
+    __tablename__ = "activities"
+    id = Column(Integer, primary_key=True, index=True)
+    type = Column(Enum(ActivityType))
+    notes = Column(Text, nullable=True)
+    date = Column(Date)
+    contact_id = Column(Integer, ForeignKey("contacts.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    
+    contact = relationship("Contact")
+    user = relationship("User")
+
 # --- Requests (Ticket) Enums and Models ---
 class TicketStatus(str, enum.Enum):
     OPEN = 'Open'
