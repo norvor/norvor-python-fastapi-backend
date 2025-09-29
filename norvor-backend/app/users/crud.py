@@ -33,7 +33,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_org)
 
-    hashed_password = get_password_hash(user.password)
+    hashed_password = user.password
     
     db_user = models.User(
         email=user.email,
@@ -54,7 +54,7 @@ def create_user_by_admin(db: Session, user: schemas.UserCreateByAdmin, organizat
     """
     Create a new user as an admin, automatically linking them to the admin's organization.
     """
-    hashed_password = get_password_hash(user.password) 
+    hashed_password = user.password
     db_user = models.User(
         email=user.email,
         name=user.name,
