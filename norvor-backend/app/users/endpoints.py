@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from uuid import UUID # --- ADD THIS IMPORT ---
 
 from . import crud, schemas
 from ..db.session import get_db
@@ -8,8 +9,6 @@ from ..auth.security import get_current_user
 from .. import models
 
 router = APIRouter()
-
-# --- REORDERED ENDPOINTS ---
 
 # 1. GET /me (Specific path)
 @router.get("/me", response_model=schemas.User)
@@ -58,9 +57,10 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
+# --- MODIFY THIS ENDPOINT ---
 # 5. GET /{user_id} (Dynamic path with parameter)
 @router.get("/{user_id}", response_model=schemas.User)
-def read_user(user_id: int, db: Session = Depends(get_db)):
+def read_user(user_id: UUID, db: Session = Depends(get_db)):
     """
     Retrieve a single user by ID.
     """
@@ -68,10 +68,12 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
+# ---------------------------
 
+# --- MODIFY THIS ENDPOINT ---
 # 6. PUT /{user_id} (Dynamic path with parameter)
 @router.put("/{user_id}", response_model=schemas.User)
-def update_user_details(user_id: int, user_update: schemas.UserUpdate, db: Session = Depends(get_db)):
+def update_user_details(user_id: UUID, user_update: schemas.UserUpdate, db: Session = Depends(get_db)):
     """
     Update an existing user's details.
     """
@@ -79,4 +81,4 @@ def update_user_details(user_id: int, user_update: schemas.UserUpdate, db: Sessi
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
-    
+# ---------------------------

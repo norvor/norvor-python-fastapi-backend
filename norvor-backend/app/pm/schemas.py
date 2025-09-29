@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import date
-from ..models import ProjectStatus, TaskStatus # Importing Enums from models.py
+from uuid import UUID # --- ADD THIS IMPORT ---
+from ..models import ProjectStatus, TaskStatus 
 
 # --- Task Schemas ---
 
@@ -12,12 +13,16 @@ class TaskBase(BaseModel):
     status: TaskStatus
 
 class TaskCreate(TaskBase):
-    assignee_id: int
+    # --- MODIFY THIS LINE ---
+    assignee_id: UUID
+    # ----------------------
     project_id: int
 
 class Task(TaskBase):
     id: int
-    assignee_id: int
+    # --- MODIFY THIS LINE ---
+    assignee_id: UUID
+    # ----------------------
     project_id: int
 
     class Config:
@@ -34,14 +39,18 @@ class ProjectBase(BaseModel):
     progress: int
 
 class ProjectCreate(ProjectBase):
-    manager_id: int
-    member_ids: List[int] = []
+    # --- MODIFY THIS LINE ---
+    manager_id: UUID
+    member_ids: List[UUID] = []
+    # ----------------------
 
 class Project(ProjectBase):
     id: int
-    manager_id: int
-    tasks: List[Task] = [] # We can show related tasks when fetching a project
-    member_ids: List[int] = [] # Storing member IDs as a simple list for now
+    # --- MODIFY THIS LINE ---
+    manager_id: UUID
+    member_ids: List[UUID] = []
+    # ----------------------
+    tasks: List[Task] = [] 
 
     class Config:
         from_attributes = True

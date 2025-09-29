@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from uuid import UUID # --- ADD THIS IMPORT ---
 
 from . import crud, schemas
 from .. import models
 from ..db.session import get_db
-from ..users.crud import get_user # To validate the submitter exists
+from ..users.crud import get_user
 
 router = APIRouter()
 
@@ -17,6 +18,7 @@ def read_all_tickets(skip: int = 0, limit: int = 100, db: Session = Depends(get_
     tickets = crud.get_all_tickets(db, skip=skip, limit=limit)
     return tickets
 
+# --- MODIFY THIS ENDPOINT ---
 @router.post("/tickets/", response_model=schemas.Ticket)
 def create_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db)):
     """
@@ -28,6 +30,7 @@ def create_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=f"User with id {ticket.submitted_by} not found")
 
     return crud.create_ticket(db=db, ticket=ticket)
+# ---------------------------
 
 
 @router.get("/tickets/team/{team_id}", response_model=List[schemas.Ticket])

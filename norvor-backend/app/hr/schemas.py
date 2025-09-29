@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import date
-from ..models import LeaveType, RequestStatus # Importing Enums from models.py
+from uuid import UUID # --- ADD THIS IMPORT ---
+from ..models import LeaveType, RequestStatus
 
 # --- TimeOffRequest Schemas ---
 
@@ -12,12 +13,16 @@ class TimeOffRequestBase(BaseModel):
     type: LeaveType
 
 class TimeOffRequestCreate(TimeOffRequestBase):
-    user_id: int
-    status: RequestStatus = RequestStatus.PENDING # Default status on creation
+    # --- MODIFY THIS LINE ---
+    user_id: UUID
+    # ----------------------
+    status: RequestStatus = RequestStatus.PENDING
 
 class TimeOffRequest(TimeOffRequestBase):
     id: int
-    user_id: int
+    # --- MODIFY THIS LINE ---
+    user_id: UUID
+    # ----------------------
     status: RequestStatus
 
     class Config:

@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
-from ..models import TicketStatus # Importing the Enum from models.py
+from uuid import UUID # --- ADD THIS IMPORT ---
+from ..models import TicketStatus
 
 # --- Ticket Schemas ---
 
@@ -11,14 +12,18 @@ class TicketBase(BaseModel):
     team_id: str
 
 class TicketCreate(TicketBase):
-    submitted_by: int
+    # --- MODIFY THIS LINE ---
+    submitted_by: UUID
+    # ----------------------
 
 class TicketUpdate(BaseModel):
     status: Optional[TicketStatus] = None
 
 class Ticket(TicketBase):
     id: int
-    submitted_by: int
+    # --- MODIFY THIS LINE ---
+    submitted_by: UUID
+    # ----------------------
     created_at: datetime
     status: TicketStatus
 

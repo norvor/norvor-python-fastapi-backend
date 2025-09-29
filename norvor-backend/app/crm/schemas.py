@@ -1,9 +1,9 @@
-# norvor-backend/app/crm/schemas.py
 from pydantic import BaseModel
 from typing import Optional
 from datetime import date
-from ..models import DealStage, ActivityType # <--- FIX: MUST IMPORT ActivityType
-from .. import models # <--- Used for models.ActivityType reference (already present)
+from uuid import UUID # --- ADD THIS IMPORT ---
+from ..models import DealStage, ActivityType
+from .. import models
 
 # --- Contact Schemas ---
 
@@ -14,18 +14,24 @@ class ContactBase(BaseModel):
     phone: str
 
 class ContactCreate(ContactBase):
-    owner_id: Optional[int] = None
+    # --- MODIFY THIS LINE ---
+    owner_id: Optional[UUID] = None
+    # ----------------------
 
 class ContactUpdate(BaseModel):
     name: Optional[str] = None
     company: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
-    owner_id: Optional[int] = None
+    # --- MODIFY THIS LINE ---
+    owner_id: Optional[UUID] = None
+    # ----------------------
 
 class Contact(ContactBase):
     id: int
-    owner_id: Optional[int] = None
+    # --- MODIFY THIS LINE ---
+    owner_id: Optional[UUID] = None
+    # ----------------------
     created_at: Optional[date] = None
 
     class Config:
@@ -41,7 +47,9 @@ class DealBase(BaseModel):
     close_date: date
 
 class DealCreate(DealBase):
-    owner_id: int
+    # --- MODIFY THIS LINE ---
+    owner_id: UUID
+    # ----------------------
     contact_id: int
 
 class DealUpdate(BaseModel):
@@ -49,11 +57,15 @@ class DealUpdate(BaseModel):
     value: Optional[float] = None
     stage: Optional[DealStage] = None
     close_date: Optional[date] = None
-    owner_id: Optional[int] = None
+    # --- MODIFY THIS LINE ---
+    owner_id: Optional[UUID] = None
+    # ----------------------
 
 class Deal(DealBase):
     id: int
-    owner_id: int
+    # --- MODIFY THIS LINE ---
+    owner_id: UUID
+    # ----------------------
     contact_id: int
 
     class Config:
@@ -62,16 +74,18 @@ class Deal(DealBase):
 # --- Activity Schemas ---
 
 class ActivityBase(BaseModel):
-    type: models.ActivityType # <--- Correctly references the imported enum
+    type: models.ActivityType
     notes: Optional[str] = None
     date: date
     contact_id: int
-    user_id: int
+    # --- MODIFY THIS LINE ---
+    user_id: UUID
+    # ----------------------
 
 class ActivityCreate(ActivityBase):
     pass
 
-class Activity(ActivityBase): # <--- This class resolves the 'no attribute Activity' error
+class Activity(ActivityBase):
     id: int
 
     class Config:

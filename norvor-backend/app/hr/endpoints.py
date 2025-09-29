@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from uuid import UUID # --- ADD THIS IMPORT ---
 
 from . import crud, schemas
 from .. import models
 from ..db.session import get_db
-from ..users.crud import get_user # To validate that the user exists
+from ..users.crud import get_user
 
 router = APIRouter()
 
@@ -30,14 +31,15 @@ def read_all_requests(skip: int = 0, limit: int = 100, db: Session = Depends(get
     requests = crud.get_all_time_off_requests(db, skip=skip, limit=limit)
     return requests
 
-
+# --- MODIFY THIS ENDPOINT ---
 @router.get("/requests/user/{user_id}", response_model=List[schemas.TimeOffRequest])
-def read_requests_for_user(user_id: int, db: Session = Depends(get_db)):
+def read_requests_for_user(user_id: UUID, db: Session = Depends(get_db)):
     """
     Retrieve all time-off requests for a specific user.
     """
     requests = crud.get_time_off_requests_for_user(db, user_id=user_id)
     return requests
+# ---------------------------
 
 
 @router.patch("/requests/{request_id}/status", response_model=schemas.TimeOffRequest)

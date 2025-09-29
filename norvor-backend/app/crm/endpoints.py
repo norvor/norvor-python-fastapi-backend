@@ -1,7 +1,7 @@
-# norvor-backend/app/crm/endpoints.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from uuid import UUID # --- ADD THIS IMPORT ---
 
 from . import crud, schemas
 from ..db.session import get_db
@@ -58,41 +58,11 @@ def delete_contact(contact_id: int, db: Session = Depends(get_db)):
 
 # --- Deal Endpoints ---
 
+# --- MODIFY THIS ENDPOINT ---
 @router.post("/deals/", response_model=schemas.Deal)
 def create_deal(deal: schemas.DealCreate, db: Session = Depends(get_db)):
     """
     Create a new deal.
     """
+    # Now correctly fetches a user by UUID
     owner = get_user(db, user_id=deal.owner_id)
-    if not owner:
-        raise HTTPException(status_code=404, detail=f"User with id {deal.owner_id} not found")
-
-    contact = crud.get_contact(db, contact_id=deal.contact_id) 
-    if not contact:
-        raise HTTPException(status_code=404, detail=f"Contact with id {deal.contact_id} not found")
-
-    return crud.create_deal(db=db, deal=deal)
-
-@router.get("/deals/", response_model=List[schemas.Deal])
-def read_deals(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """
-    Retrieve all deals.
-    """
-    deals = crud.get_deals(db, skip=skip, limit=limit)
-    return deals
-
-# --- Activity Endpoints ---
-@router.post("/activities/", response_model=schemas.Activity)
-def create_activity(activity: schemas.ActivityCreate, db: Session = Depends(get_db)):
-    """
-    Create a new activity.
-    """
-    return crud.create_activity(db=db, activity=activity)
-
-@router.get("/activities/", response_model=List[schemas.Activity])
-def read_activities(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """
-    Retrieve all activities. (Used by frontend Redux store)
-    """
-    activities = crud.get_activities(db, skip=skip, limit=limit)
-    return activities

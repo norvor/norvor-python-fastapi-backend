@@ -1,26 +1,29 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from uuid import UUID # --- ADD THIS IMPORT ---
 
 from . import crud, schemas
 from ..db.session import get_db
-from ..users.crud import get_user # To validate manager/assignee IDs
+from ..users.crud import get_user 
 
 router = APIRouter()
 
 # --- Project Endpoints ---
 
+# --- MODIFY THIS ENDPOINT ---
 @router.post("/projects/", response_model=schemas.Project)
 def create_project(project: schemas.ProjectCreate, db: Session = Depends(get_db)):
     """
     Create a new project.
     """
-    # Validate that the manager exists
+    # Validate that the manager exists using a UUID
     db_manager = get_user(db, user_id=project.manager_id)
     if not db_manager:
         raise HTTPException(status_code=404, detail=f"Manager with id {project.manager_id} not found")
 
     return crud.create_project(db=db, project=project)
+# ---------------------------
 
 @router.get("/projects/", response_model=List[schemas.Project])
 def read_projects(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -43,21 +46,23 @@ def read_project(project_id: int, db: Session = Depends(get_db)):
 
 # --- Task Endpoints ---
 
+# --- MODIFY THIS ENDPOINT ---
 @router.post("/tasks/", response_model=schemas.Task)
 def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
     """
     Create a new task for a project.
     """
-    # Validate that the project and assignee exist
     db_project = crud.get_project(db, project_id=task.project_id)
     if not db_project:
         raise HTTPException(status_code=404, detail=f"Project with id {task.project_id} not found")
 
+    # Validate that the assignee exists using a UUID
     db_assignee = get_user(db, user_id=task.assignee_id)
     if not db_assignee:
         raise HTTPException(status_code=404, detail=f"Assignee with id {task.assignee_id} not found")
 
     return crud.create_task(db=db, task=task)
+# ---------------------------
 
 @router.get("/tasks/", response_model=List[schemas.Task])
 def read_tasks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

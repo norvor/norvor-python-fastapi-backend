@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
+from uuid import UUID # --- ADD THIS IMPORT ---
 from ..models import UserRole
 
 # --- Properties to receive via API on public creation ---
@@ -12,7 +13,6 @@ class UserCreate(BaseModel):
     department: str = "General" 
     title: Optional[str] = "Team Member" 
 
-# --- ADD THIS NEW CLASS ---
 # Properties for an Admin creating a user within their own org
 class UserCreateByAdmin(BaseModel):
     name: str
@@ -21,7 +21,6 @@ class UserCreateByAdmin(BaseModel):
     role: UserRole
     department: str
     title: Optional[str] = None
-# -------------------------
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
@@ -34,7 +33,9 @@ class UserUpdate(BaseModel):
 
 # --- Properties to return via API ---
 class User(BaseModel):
-    id: int
+    # --- MODIFY THIS LINE ---
+    id: UUID
+    # ----------------------
     name: str
     email: EmailStr
     role: UserRole
