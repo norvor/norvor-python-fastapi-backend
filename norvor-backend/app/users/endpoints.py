@@ -5,11 +5,21 @@ from typing import List
 from . import crud, schemas
 from ..db.session import get_db
 from ..auth.security import get_current_user
-from .. import models # --- ADD THIS IMPORT ---
+from .. import models
 
 router = APIRouter()
 
-# This is the PUBLIC signup endpoint
+# --- REORDERED ENDPOINTS ---
+
+# 1. GET /me (Specific path)
+@router.get("/me", response_model=schemas.User)
+def read_users_me(current_user: schemas.User = Depends(get_current_user)):
+    """
+    Fetch the currently logged-in user.
+    """
+    return current_user
+
+# 2. POST / (Root, for public creation)
 @router.post("/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     """
@@ -20,7 +30,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already registered")
     return crud.create_user(db=db, user=user)
 
-# --- ADD THIS NEW ENDPOINT ---
+# 3. POST /create_by_admin (Specific path)
 @router.post("/create_by_admin", response_model=schemas.User)
 def create_user_by_admin(
     user: schemas.UserCreateByAdmin, 
@@ -30,7 +40,6 @@ def create_user_by_admin(
     """
     Create a new user within the current admin's organization.
     """
-    # Simple security check for now, will be enhanced in the RBAC phase
     if current_user.role != models.UserRole.EXECUTIVE:
         raise HTTPException(status_code=403, detail="Not authorized to create users")
         
@@ -39,8 +48,8 @@ def create_user_by_admin(
         raise HTTPException(status_code=400, detail="Email already registered")
         
     return crud.create_user_by_admin(db=db, user=user, organization_id=current_user.organization_id)
-# --------------------------------
 
+# 4. GET / (List all users)
 @router.get("/", response_model=List[schemas.User])
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
@@ -49,13 +58,7 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
-@router.get("/me", response_model=schemas.User)
-def read_users_me(current_user: schemas.User = Depends(get_current_user)):
-    """
-    Fetch the currently logged-in user.
-    """
-    return current_user
-
+# 5. GET /{user_id} (Dynamic path with parameter)
 @router.get("/{user_id}", response_model=schemas.User)
 def read_user(user_id: int, db: Session = Depends(get_db)):
     """
@@ -66,10 +69,11 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
+# 6. PUT /{user_id} (Dynamic path with parameter)
 @router.put("/{user_id}", response_model=schemas.User)
 def update_user_details(user_id: int, user_update: schemas.UserUpdate, db: Session = Depends(get_db)):
     """
-    Update an existing user's details (Used for role and permission management).
+    Update an existing user's details.
     """
     db_user = crud.update_user(db, user_id=user_id, user_update=user_update)
     if db_user is None:
