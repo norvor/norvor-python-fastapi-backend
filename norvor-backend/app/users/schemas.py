@@ -1,7 +1,9 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-from uuid import UUID # --- ADD THIS IMPORT ---
+from uuid import UUID
 from ..models import UserRole
+# --- ADD THIS IMPORT ---
+from ..organizations.schemas import OrganizationInUser
 
 # --- Properties to receive via API on public creation ---
 class UserCreate(BaseModel):
@@ -33,13 +35,13 @@ class UserUpdate(BaseModel):
 
 # --- Properties to return via API ---
 class User(BaseModel):
-    # --- MODIFY THIS LINE ---
     id: UUID
-    # ----------------------
     name: str
     email: EmailStr
     role: UserRole
-    organization_id: int
+    # --- REPLACE 'organization_id' WITH THIS ---
+    organization: OrganizationInUser
+    # -------------------------------------------
     department: str
     avatar: Optional[str] = None
     title: Optional[str] = None
