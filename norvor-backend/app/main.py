@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .database import Base, engine
+from db.session import engine
+from db.base_class import Base
 from .api.api_v1 import api_router
 
 # This command creates the database tables if they don't exist
