@@ -48,3 +48,9 @@ def get_tasks_for_project(db: Session, project_id: int):
     Get all tasks associated with a specific project.
     """
     return db.query(models.Task).filter(models.Task.project_id == project_id).all()
+
+def get_all_tasks(db: Session, skip: int = 0, limit: int = 100):
+    """
+    Get a list of all tasks.
+    """
+    return db.query(models.Task).offset(skip).limit(limit).all()

@@ -43,6 +43,29 @@ def get_contact(db: Session, contact_id: int):
     """
     return db.query(models.Contact).filter(models.Contact.id == contact_id).first()
 
+def update_contact(db: Session, contact_id: int, contact_update: schemas.ContactCreate):
+    """
+    Update an existing contact's details.
+    """
+    db_contact = get_contact(db, contact_id=contact_id)
+    if db_contact:
+        update_data = contact_update.dict(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_contact, key, value)
+        db.commit()
+        db.refresh(db_contact)
+    return db_contact
+
+def delete_contact(db: Session, contact_id: int):
+    """
+    Delete a contact from the database.
+    """
+    db_contact = get_contact(db, contact_id=contact_id)
+    if db_contact:
+        db.delete(db_contact)
+        db.commit()
+    return db_contact    
+
 def get_deals(db: Session, skip: int = 0, limit: int = 100):
     """
     Get a list of all deals.
