@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from . import crud, schemas
-from ..database import get_db
+from ..db.session import get_db
 from ..users.crud import get_user # We need this to validate the owner_id
 
 router = APIRouter()

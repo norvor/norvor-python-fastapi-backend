@@ -4,7 +4,7 @@ from typing import List
 
 from . import crud, schemas
 from .. import models
-from ..database import get_db
+from ..db.session import get_db
 from ..users.crud import get_user # To validate the submitter exists
 
 router = APIRouter()

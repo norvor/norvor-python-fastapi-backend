@@ -5,7 +5,7 @@ from datetime import timedelta
 
 from .. import users
 from . import schemas, security
-from ..database import get_db
+from ..db.session import get_db
 from ..core.config import settings
 
 router = APIRouter()
