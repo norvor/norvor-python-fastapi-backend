@@ -19,8 +19,9 @@ class UserUpdate(BaseModel):
     role: Optional[UserRole] = None
     department: Optional[str] = None
     title: Optional[str] = None
+    organization_id: Optional[int] = None  # Add this line if needed
 
-    
+
 # --- Properties to return via API ---
 class User(BaseModel):
     id: int
