@@ -1,11 +1,13 @@
+# norvor-backend/app/api/api_v1.py
+
 from fastapi import APIRouter
-from ..users.endpoints import router as users_router
+from ..users.endpoints import router as users_api_router # <-- RENAME 1: Use a unique variable name
 from ..crm.endpoints import router as crm_router
 from ..pm.endpoints import router as pm_router
 from ..hr.endpoints import router as hr_router
 from ..organiser.endpoints import router as organiser_router
 from ..docs.endpoints import router as docs_router
-from ..auth.endpoints import router as auth_router # Import the auth router
+from ..auth.endpoints import router as auth_router 
 
 # Add this line to import the Requests router
 from ..requests.endpoints import router as requests_router
@@ -13,11 +15,10 @@ from ..requests.endpoints import router as requests_router
 api_router = APIRouter()
 
 # --- Authentication Router ---
-# This handles /login, /signup, etc.
 api_router.include_router(auth_router, tags=["Authentication"])
 
 # Include the users router
-api_router.include_router(users_router, prefix="/users", tags=["Users"])
+api_router.include_router(users_api_router, prefix="/users", tags=["Users"]) # <-- RENAME 2: Use the new variable
 
 # Include the CRM router
 api_router.include_router(crm_router, prefix="/crm", tags=["CRM"])
