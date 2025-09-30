@@ -10,6 +10,7 @@ class DocBase(BaseModel):
 
 class DocCreate(DocBase):
     parent_id: Optional[str] = None
+    organization_id: int
 
 class DocUpdate(DocBase):
     parent_id: Optional[str] = None
@@ -17,6 +18,6 @@ class DocUpdate(DocBase):
 class Doc(DocBase):
     id: str
     parent_id: Optional[str] = None
-
+    organization_id: int
     class Config:
         from_attributes = True
