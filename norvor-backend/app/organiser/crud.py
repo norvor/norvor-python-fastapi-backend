@@ -9,7 +9,6 @@ def create_organiser_element(db: Session, element: schemas.OrganiserElementCreat
     """
     Create a new organiser element.
     """
-    # Generate a unique ID for the new element
     generated_id = f"el_{uuid.uuid4().hex}"
     
     db_element = models.OrganiserElement(
@@ -21,11 +20,13 @@ def create_organiser_element(db: Session, element: schemas.OrganiserElementCreat
     db.refresh(db_element)
     return db_element
 
-def get_organiser_elements(db: Session, skip: int = 0, limit: int = 100):
+# --- MODIFY THIS FUNCTION ---
+def get_organiser_elements(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
     """
-    Get a list of all organiser elements.
+    Get a list of all organiser elements for a specific organization.
     """
-    return db.query(models.OrganiserElement).offset(skip).limit(limit).all()
+    return db.query(models.OrganiserElement).filter(models.OrganiserElement.organization_id == organization_id).offset(skip).limit(limit).all()
+# --------------------------
 
 def update_organiser_element(db: Session, element_id: str, element_update: schemas.OrganiserElementCreate):
     """

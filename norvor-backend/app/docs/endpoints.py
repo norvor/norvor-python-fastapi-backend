@@ -4,23 +4,29 @@ from typing import List
 
 from . import crud, schemas
 from ..db.session import get_db
+from ..auth.security import get_current_user # --- ADD THIS IMPORT ---
+from .. import models # --- ADD THIS IMPORT ---
 
 router = APIRouter()
 
+# --- MODIFY THIS ENDPOINT ---
 @router.post("/", response_model=schemas.Doc)
-def create_doc(doc: schemas.DocCreate, db: Session = Depends(get_db)):
+def create_doc(doc: schemas.DocCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
-    Create a new document.
+    Create a new document for the current user's organization.
     """
+    doc.organization_id = current_user.organization_id
     return crud.create_doc(db=db, doc=doc)
+# ---------------------------
 
 
+# --- MODIFY THIS ENDPOINT ---
 @router.get("/", response_model=List[schemas.Doc])
-def read_all_docs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_all_docs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
-    Retrieve all documents.
+    Retrieve all documents for the current user's organization.
     """
-    docs = crud.get_all_docs(db, skip=skip, limit=limit)
+    docs = crud.get_all_docs(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
     return docs
 
 

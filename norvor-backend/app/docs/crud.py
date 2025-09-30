@@ -9,7 +9,6 @@ def create_doc(db: Session, doc: schemas.DocCreate):
     """
     Create a new document.
     """
-    # Generate a unique string ID for the new document
     generated_id = f"doc_{uuid.uuid4().hex}"
     
     db_doc = models.Doc(
@@ -27,11 +26,13 @@ def get_doc(db: Session, doc_id: str):
     """
     return db.query(models.Doc).filter(models.Doc.id == doc_id).first()
 
-def get_all_docs(db: Session, skip: int = 0, limit: int = 100):
+# --- MODIFY THIS FUNCTION ---
+def get_all_docs(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
     """
-    Get a list of all documents.
+    Get a list of all documents for a specific organization.
     """
-    return db.query(models.Doc).offset(skip).limit(limit).all()
+    return db.query(models.Doc).filter(models.Doc.organization_id == organization_id).offset(skip).limit(limit).all()
+# ---------------------------
 
 def update_doc(db: Session, doc_id: str, doc_update: schemas.DocUpdate):
     """
@@ -52,8 +53,6 @@ def delete_doc(db: Session, doc_id: str):
     """
     db_doc = get_doc(db, doc_id=doc_id)
     if db_doc:
-        # In a real app, you might want to handle child documents here
-        # (e.g., delete them or make them root documents).
         db.delete(db_doc)
         db.commit()
     return db_doc

@@ -12,7 +12,7 @@ from app import models
 from app.auth.security import get_password_hash
 from datetime import datetime, date
 
-# --- GENERATE STATIC UUIDs FOR USERS ---
+# --- STATIC UUIDs FOR CONSISTENT RELATIONSHIPS ---
 user_ids = {
     "anya": uuid.uuid4(),
     "ben": uuid.uuid4(),
@@ -20,18 +20,10 @@ user_ids = {
     "david": uuid.uuid4(),
     "eva": uuid.uuid4()
 }
-# ------------------------------------
 
-# --- REMOVED "id": 1 FROM THIS DICTIONARY ---
+# --- DATA DICTIONARIES ---
+
 ORGANIZATION_DATA = { "name": "QuantumLeap Dynamics" }
-# -----------------------------------------
-
-# --- UPDATE ALL FOREIGN KEYS TO USE THE STATIC UUIDs ---
-ACTIVITIES_DATA = [
-    {"id": 1001, "type": models.ActivityType.CALL, "notes": "Initial discovery call with Fintech Innovators.", "date": date(2025, 9, 20), "contact_id": 101, "user_id": user_ids["chloe"]},
-    {"id": 1002, "type": models.ActivityType.EMAIL, "notes": "Sent Project Phoenix proposal to Fintech.", "date": date(2025, 9, 25), "contact_id": 101, "user_id": user_ids["chloe"]},
-    {"id": 1003, "type": models.ActivityType.MEETING, "notes": "Met with HealthBridge team to discuss integration.", "date": date(2025, 9, 28), "contact_id": 102, "user_id": user_ids["chloe"]},
-]
 
 USERS_DATA = [
     {"id": user_ids["anya"], "name": "Anya Sharma", "email": "anya.sharma@quantumleap.dev", "role": models.UserRole.EXECUTIVE, "title": "Chief Executive Officer", "department": "Executive", "avatar": "https://i.pravatar.cc/150?u=anya.sharma"},
@@ -40,40 +32,53 @@ USERS_DATA = [
     {"id": user_ids["david"], "name": "David Rodriguez", "email": "david.r@quantumleap.dev", "role": models.UserRole.MANAGEMENT, "title": "Engineering Lead", "department": "Engineering", "avatar": "https://i.pravatar.cc/150?u=david.r"},
     {"id": user_ids["eva"], "name": "Eva Martinez", "email": "eva.martinez@quantumleap.dev", "role": models.UserRole.TEAM, "title": "Senior Frontend Developer", "department": "Engineering", "manager_id": user_ids["david"], "avatar": "https://i.pravatar.cc/150?u=eva.martinez"},
 ]
+
 CONTACTS_DATA = [
     {"id": 101, "name": "Fintech Innovators Inc.", "company": "Fintech Innovators", "email": "contact@fintechinnovate.com", "phone": "+91 22 4567 8901", "owner_id": user_ids["chloe"], "created_at": date(2025, 8, 15)},
     {"id": 102, "name": "HealthBridge Solutions", "company": "HealthBridge", "email": "support@healthbridge.io", "phone": "+91 80 1234 5678", "owner_id": user_ids["chloe"], "created_at": date(2025, 9, 1)},
 ]
+
 DEALS_DATA = [
     {"id": 201, "name": "Project Phoenix - Platform Overhaul", "value": 250000.00, "stage": models.DealStage.NEGOTIATION, "contact_id": 101, "owner_id": user_ids["chloe"], "close_date": date(2025, 10, 30)},
     {"id": 202, "name": "Patient Data API Integration", "value": 120000.00, "stage": models.DealStage.PROPOSAL_SENT, "contact_id": 102, "owner_id": user_ids["chloe"], "close_date": date(2025, 11, 20)},
 ]
+
+ACTIVITIES_DATA = [
+    {"id": 1001, "type": models.ActivityType.CALL, "notes": "Initial discovery call with Fintech Innovators.", "date": date(2025, 9, 20), "contact_id": 101, "user_id": user_ids["chloe"]},
+    {"id": 1002, "type": models.ActivityType.EMAIL, "notes": "Sent Project Phoenix proposal to Fintech.", "date": date(2025, 9, 25), "contact_id": 101, "user_id": user_ids["chloe"]},
+    {"id": 1003, "type": models.ActivityType.MEETING, "notes": "Met with HealthBridge team to discuss integration.", "date": date(2025, 9, 28), "contact_id": 102, "user_id": user_ids["chloe"]},
+]
+
 PROJECTS_DATA = [
     {"id": 301, "name": "Q4 Product Launch: 'Odyssey'", "manager_id": user_ids["david"], "status": models.ProjectStatus.ON_TRACK, "progress": 65, "start_date": date(2025, 9, 1), "end_date": date(2025, 12, 15), "member_ids": [str(user_ids["eva"])]},
 ]
+
 TASKS_DATA = [
     {"id": 401, "name": "Finalize UI/UX Mockups", "description": "Complete all Figma mockups for the Odyssey dashboard.", "status": models.TaskStatus.IN_PROGRESS, "assignee_id": user_ids["eva"], "project_id": 301, "due_date": date(2025, 10, 10)},
     {"id": 402, "name": "Setup Staging Environment", "description": "Deploy the latest build to the staging server for QA.", "status": models.TaskStatus.TO_DO, "assignee_id": user_ids["eva"], "project_id": 301, "due_date": date(2025, 10, 15)},
 ]
+
 TIMEOFF_DATA = [
     {"id": 501, "user_id": user_ids["eva"], "type": models.LeaveType.VACATION, "start_date": date(2025, 10, 20), "end_date": date(2025, 10, 24), "status": models.RequestStatus.APPROVED, "reason": "Diwali family trip."},
 ]
+
 ORGANISER_DATA = [
     {"id": "org_root", "parent_id": None, "type": models.OrganiserElementType.DEPARTMENT, "label": "QuantumLeap Dynamics", "properties": {"CEO": "Anya Sharma"}},
     {"id": "dept_sales", "parent_id": "org_root", "type": models.OrganiserElementType.DEPARTMENT, "label": "Sales", "properties": {"Head": "Ben Carter"}},
     {"id": "team_sales_west", "parent_id": "dept_sales", "type": models.OrganiserElementType.TEAM, "label": "West Coast Sales", "properties": {}},
 ]
+
 DOCS_DATA = [
     {"id": "doc_onboarding", "parent_id": None, "title": "🚀 Welcome to QuantumLeap!", "icon": "🚀", "content": "<h1>Your journey starts here.</h1><p>This is the central knowledge base.</p>"},
 ]
+
 TICKETS_DATA = [
     {"id": 601, "title": "Access to Figma designs for 'Odyssey'", "description": "Hey team, I can't seem to access the latest mockups for the Q4 launch.", "status": models.TicketStatus.OPEN, "submitted_by": user_ids["eva"], "team_id": "alpha_squad", "created_at": datetime(2025, 9, 28, 10, 0, 0)},
 ]
 
-# -------------------------------------------------------------------
-
 def seed_database(db: Session):
-    print("Clearing old data (in correct dependency order)...")
+    print("Clearing old data...")
+    # Clear tables in reverse order of dependency
     db.query(models.Activity).delete()
     db.query(models.Ticket).delete()
     db.query(models.Doc).delete()
@@ -88,61 +93,44 @@ def seed_database(db: Session):
     db.commit()
 
     print("Seeding new data...")
+    
+    # Create the Organization first and get its ID
     db_org = models.Organization(**ORGANIZATION_DATA)
     db.add(db_org)
     db.commit()
-    db.refresh(db_org) # Refresh to get the auto-generated ID
+    db.refresh(db_org)
+    org_id = db_org.id
 
-    # Link all users to the newly created organization
+    # Add the organization_id to all data that needs it
     for user_data in USERS_DATA:
-        user_data["organization_id"] = db_org.id
-        db_user = models.User(
-            **user_data,
-            hashed_password= "password123"
-        )
+        user_data["organization_id"] = org_id
+        db_user = models.User(**user_data, hashed_password="password123")
         db.add(db_user)
     db.commit()
 
-    for contact_data in CONTACTS_DATA:
-        db.add(models.Contact(**contact_data))
-    db.commit()
-
-    for deal_data in DEALS_DATA:
-        db.add(models.Deal(**deal_data))
-    db.commit()
-    
-    for project_data in PROJECTS_DATA:
-        db.add(models.Project(**project_data))
-    db.commit()
-
-    for task_data in TASKS_DATA:
-        db.add(models.Task(**task_data))
-    db.commit()
-
-    for request_data in TIMEOFF_DATA:
-        db.add(models.TimeOffRequest(**request_data))
-    db.commit()
-    
     for element_data in ORGANISER_DATA:
+        element_data["organization_id"] = org_id
         db.add(models.OrganiserElement(**element_data))
     db.commit()
     
     for doc_data in DOCS_DATA:
+        doc_data["organization_id"] = org_id
         db.add(models.Doc(**doc_data))
     db.commit()
     
-    for ticket_data in TICKETS_DATA:
-        db.add(models.Ticket(**ticket_data))
-    db.commit()
-
-    for activity_data in ACTIVITIES_DATA:
-        db.add(models.Activity(**activity_data))
+    # Seed remaining data
+    db.add_all([models.Contact(**data) for data in CONTACTS_DATA])
+    db.add_all([models.Deal(**data) for data in DEALS_DATA])
+    db.add_all([models.Activity(**data) for data in ACTIVITIES_DATA])
+    db.add_all([models.Project(**data) for data in PROJECTS_DATA])
+    db.add_all([models.Task(**data) for data in TASKS_DATA])
+    db.add_all([models.TimeOffRequest(**data) for data in TIMEOFF_DATA])
+    db.add_all([models.Ticket(**data) for data in TICKETS_DATA])
     db.commit()
 
     print("\n✅ Database seeding complete!")
     print("You can log in with any user's email (e.g., 'anya.sharma@quantumleap.dev').")
     print("The password for all users is: password123")
-
 
 if __name__ == "__main__":
     print("--- Starting Database Seeding ---")

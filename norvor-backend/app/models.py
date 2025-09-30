@@ -161,6 +161,9 @@ class OrganiserElement(Base):
     __tablename__ = "organiser_elements"
     id = Column(String, primary_key=True, index=True)
     parent_id = Column(String, ForeignKey("organiser_elements.id"), nullable=True)
+    # --- ADD THIS LINE ---
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    # ----------------------
     type = Column(Enum(OrganiserElementType))
     label = Column(String)
     properties = Column(JSON, default={})
@@ -171,6 +174,9 @@ class Doc(Base):
     __tablename__ = "docs"
     id = Column(String, primary_key=True, index=True)
     parent_id = Column(String, ForeignKey("docs.id"), nullable=True)
+    # --- ADD THIS LINE ---
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    # ----------------------
     title = Column(String)
     icon = Column(String, nullable=True, default="📄")
     content = Column(Text, nullable=True, default="")

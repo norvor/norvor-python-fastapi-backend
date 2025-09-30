@@ -4,24 +4,32 @@ from typing import List
 
 from . import crud, schemas
 from ..db.session import get_db
+from ..auth.security import get_current_user # --- ADD THIS IMPORT ---
+from .. import models # --- ADD THIS IMPORT ---
+
 
 router = APIRouter()
 
+# --- MODIFY THIS ENDPOINT ---
 @router.post("/elements/", response_model=schemas.OrganiserElement)
-def create_organiser_element(element: schemas.OrganiserElementCreate, db: Session = Depends(get_db)):
+def create_organiser_element(element: schemas.OrganiserElementCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
-    Create a new element in the company structure.
+    Create a new element in the company structure for the current user's organization.
     """
+    element.organization_id = current_user.organization_id
     return crud.create_organiser_element(db=db, element=element)
+# ---------------------------
 
 
+# --- MODIFY THIS ENDPOINT ---
 @router.get("/elements/", response_model=List[schemas.OrganiserElement])
-def read_organiser_elements(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_organiser_elements(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
-    Retrieve all elements in the company structure.
+    Retrieve all elements in the company structure for the current user's organization.
     """
-    elements = crud.get_organiser_elements(db, skip=skip, limit=limit)
+    elements = crud.get_organiser_elements(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
     return elements
+# ---------------------------
 
 
 @router.put("/elements/{element_id}", response_model=schemas.OrganiserElement)

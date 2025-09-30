@@ -42,8 +42,10 @@ def update_ticket_status(db: Session, ticket_id: int, status: models.TicketStatu
         db.refresh(db_ticket)
     return db_ticket
 
-def get_all_tickets(db: Session, skip: int = 0, limit: int = 100):
+# --- MODIFY THIS FUNCTION ---
+def get_all_tickets(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
     """
-    Get a list of all tickets.
+    Get a list of all tickets for a specific organization.
     """
-    return db.query(models.Ticket).offset(skip).limit(limit).all()
+    return db.query(models.Ticket).join(models.User, models.Ticket.submitted_by == models.User.id).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
+# --------------------------

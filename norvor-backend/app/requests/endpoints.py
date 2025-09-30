@@ -7,16 +7,19 @@ from . import crud, schemas
 from .. import models
 from ..db.session import get_db
 from ..users.crud import get_user
+from ..auth.security import get_current_user # --- ADD THIS IMPORT ---
 
 router = APIRouter()
 
+# --- MODIFY THIS ENDPOINT ---
 @router.get("/tickets/", response_model=List[schemas.Ticket]) 
-def read_all_tickets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_all_tickets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
-    Retrieve all tickets. (Used by frontend Redux store)
+    Retrieve all tickets for the current user's organization.
     """
-    tickets = crud.get_all_tickets(db, skip=skip, limit=limit)
+    tickets = crud.get_all_tickets(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
     return tickets
+
 
 # --- MODIFY THIS ENDPOINT ---
 @router.post("/tickets/", response_model=schemas.Ticket)

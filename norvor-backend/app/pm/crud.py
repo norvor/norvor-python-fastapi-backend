@@ -10,8 +10,6 @@ def create_project(db: Session, project: schemas.ProjectCreate):
     """
     Create a new project.
     """
-    # Note: In a real app, you'd handle adding members via a separate table/process.
-    # For now, we're just storing the IDs.
     db_project = models.Project(**project.dict())
     db.add(db_project)
     db.commit()
@@ -24,11 +22,13 @@ def get_project(db: Session, project_id: int):
     """
     return db.query(models.Project).filter(models.Project.id == project_id).first()
 
-def get_projects(db: Session, skip: int = 0, limit: int = 100):
+# --- MODIFY THIS FUNCTION ---
+def get_projects(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
     """
-    Get a list of all projects.
+    Get a list of all projects for a specific organization.
     """
-    return db.query(models.Project).offset(skip).limit(limit).all()
+    return db.query(models.Project).join(models.User, models.Project.manager_id == models.User.id).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
+# --------------------------
 
 
 # --- Task CRUD Functions ---
@@ -49,8 +49,10 @@ def get_tasks_for_project(db: Session, project_id: int):
     """
     return db.query(models.Task).filter(models.Task.project_id == project_id).all()
 
-def get_all_tasks(db: Session, skip: int = 0, limit: int = 100):
+# --- MODIFY THIS FUNCTION ---
+def get_all_tasks(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
     """
-    Get a list of all tasks.
+    Get a list of all tasks for a specific organization.
     """
-    return db.query(models.Task).offset(skip).limit(limit).all()
+    return db.query(models.Task).join(models.User, models.Task.assignee_id == models.User.id).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
+# --------------------------
