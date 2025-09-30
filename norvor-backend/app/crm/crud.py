@@ -1,15 +1,25 @@
-# norvor-backend/app/crm/crud.py
 from sqlalchemy.orm import Session
 from . import schemas
 from .. import models
 import datetime
 
-# --- Contact CRUD Functions ---
+# --- NEW COMPANY CRUD FUNCTIONS ---
+def create_company(db: Session, company: schemas.CompanyCreate, organization_id: int):
+    db_company = models.Company(**company.dict(), organization_id=organization_id)
+    db.add(db_company)
+    db.commit()
+    db.refresh(db_company)
+    return db_company
 
+def get_company(db: Session, company_id: int):
+    return db.query(models.Company).filter(models.Company.id == company_id).first()
+
+def get_companies_by_organization(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
+    return db.query(models.Company).filter(models.Company.organization_id == organization_id).offset(skip).limit(limit).all()
+# ---------------------------------
+
+# --- Contact CRUD Functions ---
 def create_contact(db: Session, contact: schemas.ContactCreate):
-    """
-    Create a new contact in the database.
-    """
     db_contact = models.Contact(
         **contact.dict(),
         created_at=datetime.date.today()
@@ -19,6 +29,7 @@ def create_contact(db: Session, contact: schemas.ContactCreate):
     db.refresh(db_contact)
     return db_contact
 
+# ... (rest of contact, deal, and activity CRUD functions remain the same)
 def get_contact(db: Session, contact_id: int):
     """
     Get a single contact by their ID.

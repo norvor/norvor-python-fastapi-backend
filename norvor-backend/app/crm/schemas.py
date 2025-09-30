@@ -1,44 +1,53 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List
 from datetime import date
-from uuid import UUID # --- ADD THIS IMPORT ---
+from uuid import UUID
 from ..models import DealStage, ActivityType
-from .. import models
 
-# --- Contact Schemas ---
+# --- NEW COMPANY SCHEMAS ---
+class CompanyBase(BaseModel):
+    name: str
+    domain: Optional[str] = None
+
+class CompanyCreate(CompanyBase):
+    pass
+
+class Company(CompanyBase):
+    id: int
+    organization_id: int
+
+    class Config:
+        from_attributes = True
+# -------------------------
+
+# --- Contact Schemas (Updated) ---
 
 class ContactBase(BaseModel):
     name: str
-    company: str
-    email: str
-    phone: str
+    email: EmailStr
+    phone: Optional[str] = None
 
 class ContactCreate(ContactBase):
-    # --- MODIFY THIS LINE ---
     owner_id: Optional[UUID] = None
-    # ----------------------
+    company_id: Optional[int] = None # Link to Company
 
 class ContactUpdate(BaseModel):
     name: Optional[str] = None
-    company: Optional[str] = None
-    email: Optional[str] = None
+    email: Optional[EmailStr] = None
     phone: Optional[str] = None
-    # --- MODIFY THIS LINE ---
     owner_id: Optional[UUID] = None
-    # ----------------------
+    company_id: Optional[int] = None
 
 class Contact(ContactBase):
     id: int
-    # --- MODIFY THIS LINE ---
     owner_id: Optional[UUID] = None
-    # ----------------------
+    company_id: Optional[int] = None
     created_at: Optional[date] = None
 
     class Config:
         from_attributes = True
 
-
-# --- Deal Schemas ---
+# --- Deal Schemas (Updated) ---
 
 class DealBase(BaseModel):
     name: str
@@ -47,40 +56,35 @@ class DealBase(BaseModel):
     close_date: date
 
 class DealCreate(DealBase):
-    # --- MODIFY THIS LINE ---
     owner_id: UUID
-    # ----------------------
     contact_id: int
+    company_id: int # Deals should also link to a company
 
 class DealUpdate(BaseModel):
     name: Optional[str] = None
     value: Optional[float] = None
     stage: Optional[DealStage] = None
     close_date: Optional[date] = None
-    # --- MODIFY THIS LINE ---
     owner_id: Optional[UUID] = None
-    # ----------------------
+    company_id: Optional[int] = None
 
 class Deal(DealBase):
     id: int
-    # --- MODIFY THIS LINE ---
     owner_id: UUID
-    # ----------------------
     contact_id: int
+    company_id: int
 
     class Config:
         from_attributes = True
         
-# --- Activity Schemas ---
+# --- Activity Schemas (No Changes) ---
 
 class ActivityBase(BaseModel):
-    type: models.ActivityType
+    type: ActivityType
     notes: Optional[str] = None
     date: date
     contact_id: int
-    # --- MODIFY THIS LINE ---
     user_id: UUID
-    # ----------------------
 
 class ActivityCreate(ActivityBase):
     pass

@@ -11,15 +11,23 @@ from .. import models
 
 router = APIRouter()
 
-# --- Contact Endpoints ---
+# --- NEW COMPANY ENDPOINTS ---
+@router.post("/companies/", response_model=schemas.Company)
+def create_company(company: schemas.CompanyCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    return crud.create_company(db=db, company=company, organization_id=current_user.organization_id)
 
+@router.get("/companies/", response_model=List[schemas.Company])
+def read_companies(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    companies = crud.get_companies_by_organization(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
+    return companies
+# ---------------------------
+
+# --- Contact Endpoints (No Changes) ---
 @router.post("/contacts/", response_model=schemas.Contact)
 def create_contact(contact: schemas.ContactCreate, db: Session = Depends(get_db)):
-    """
-    Create a new contact.
-    """
     return crud.create_contact(db=db, contact=contact)
 
+# ... (rest of contact, deal, and activity endpoints remain the same)
 @router.get("/contacts/", response_model=List[schemas.Contact])
 def read_contacts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
