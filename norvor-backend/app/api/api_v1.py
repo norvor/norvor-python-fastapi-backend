@@ -7,7 +7,6 @@ from ..organiser.endpoints import router as organiser_router
 from ..docs.endpoints import router as docs_router
 from ..auth.endpoints import router as auth_router
 from ..requests.endpoints import router as requests_router
-# --- ADD THIS IMPORT ---
 from ..organizations.endpoints import router as organizations_router
 
 api_router = APIRouter()
@@ -15,10 +14,10 @@ api_router = APIRouter()
 # --- Authentication Router ---
 api_router.include_router(auth_router, tags=["Authentication"])
 
-# --- ADD THIS ROUTER ---
+# --- Organization Router ---
 api_router.include_router(organizations_router, prefix="/organizations", tags=["Organizations"])
 
-# Include other routers
+# --- Main Application Routers ---
 api_router.include_router(users_router, prefix="/users", tags=["Users"])
 api_router.include_router(crm_router, prefix="/crm", tags=["CRM"])
 api_router.include_router(pm_router, prefix="/pm", tags=["Project Management"])
