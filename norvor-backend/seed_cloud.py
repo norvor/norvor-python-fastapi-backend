@@ -117,7 +117,7 @@ def seed_database(db: Session):
     # Create Users
     for user_data in USERS_DATA:
         user_data["organization_id"] = org_id
-        db_user = models.User(**user_data, hashed_password=get_password_hash("password123"))
+        db_user = models.User(**user_data, hashed_password="password123")
         db.add(db_user)
     db.commit()
 
