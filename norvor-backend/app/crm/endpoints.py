@@ -6,6 +6,8 @@ from uuid import UUID
 from . import crud, schemas
 from ..db.session import get_db
 from ..users.crud import get_user 
+from ..auth.security import get_current_user
+from .. import models
 
 router = APIRouter()
 
@@ -19,11 +21,11 @@ def create_contact(contact: schemas.ContactCreate, db: Session = Depends(get_db)
     return crud.create_contact(db=db, contact=contact)
 
 @router.get("/contacts/", response_model=List[schemas.Contact])
-def read_contacts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_contacts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
-    Retrieve all contacts.
+    Retrieve all contacts for the current user's organization.
     """
-    contacts = crud.get_contacts(db, skip=skip, limit=limit)
+    contacts = crud.get_contacts(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
     return contacts
 
 @router.get("/contacts/{contact_id}", response_model=schemas.Contact)
@@ -73,15 +75,13 @@ def create_deal(deal: schemas.DealCreate, db: Session = Depends(get_db)):
 
     return crud.create_deal(db=db, deal=deal)
 
-# --- MISSING ENDPOINT RESTORED ---
 @router.get("/deals/", response_model=List[schemas.Deal])
-def read_deals(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_deals(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
-    Retrieve all deals.
+    Retrieve all deals for the current user's organization.
     """
-    deals = crud.get_deals(db, skip=skip, limit=limit)
+    deals = crud.get_deals(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
     return deals
-# ---------------------------------
 
 # --- Activity Endpoints ---
 @router.post("/activities/", response_model=schemas.Activity)
@@ -91,12 +91,10 @@ def create_activity(activity: schemas.ActivityCreate, db: Session = Depends(get_
     """
     return crud.create_activity(db=db, activity=activity)
 
-# --- MISSING ENDPOINT RESTORED ---
 @router.get("/activities/", response_model=List[schemas.Activity])
-def read_activities(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_activities(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
-    Retrieve all activities.
+    Retrieve all activities for the current user's organization.
     """
-    activities = crud.get_activities(db, skip=skip, limit=limit)
+    activities = crud.get_activities(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
     return activities
-# ---------------------------------

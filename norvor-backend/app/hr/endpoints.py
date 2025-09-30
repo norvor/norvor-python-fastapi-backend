@@ -26,9 +26,6 @@ def create_time_off_request(request: schemas.TimeOffRequestCreate, db: Session =
 # --- MODIFY THIS ENDPOINT ---
 @router.get("/requests/", response_model=List[schemas.TimeOffRequest])
 def read_all_requests(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    """
-    Retrieve all time-off requests for the current user's organization.
-    """
     requests = crud.get_all_time_off_requests(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
     return requests
 # ---------------------------

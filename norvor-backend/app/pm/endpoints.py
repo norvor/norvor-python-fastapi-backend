@@ -6,8 +6,8 @@ from uuid import UUID
 from . import crud, schemas
 from ..db.session import get_db
 from ..users.crud import get_user
-from ..auth.security import get_current_user # --- ADD THIS IMPORT ---
-from .. import models # --- ADD THIS IMPORT ---
+from ..auth.security import get_current_user
+from .. import models
 
 router = APIRouter()
 
@@ -24,7 +24,6 @@ def create_project(project: schemas.ProjectCreate, db: Session = Depends(get_db)
 
     return crud.create_project(db=db, project=project)
 
-# --- MODIFY THIS ENDPOINT ---
 @router.get("/projects/", response_model=List[schemas.Project])
 def read_projects(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
@@ -32,7 +31,6 @@ def read_projects(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
     """
     projects = crud.get_projects(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
     return projects
-# ---------------------------
 
 @router.get("/projects/{project_id}", response_model=schemas.Project)
 def read_project(project_id: int, db: Session = Depends(get_db)):
@@ -62,7 +60,6 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
 
     return crud.create_task(db=db, task=task)
 
-# --- MODIFY THIS ENDPOINT ---
 @router.get("/tasks/", response_model=List[schemas.Task])
 def read_tasks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
@@ -70,4 +67,3 @@ def read_tasks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), c
     """
     tasks = crud.get_all_tasks(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
     return tasks
-# ---------------------------

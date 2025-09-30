@@ -22,14 +22,6 @@ def get_project(db: Session, project_id: int):
     """
     return db.query(models.Project).filter(models.Project.id == project_id).first()
 
-# --- MODIFY THIS FUNCTION ---
-def get_projects(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
-    """
-    Get a list of all projects for a specific organization.
-    """
-    return db.query(models.Project).join(models.User, models.Project.manager_id == models.User.id).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
-# --------------------------
-
 
 # --- Task CRUD Functions ---
 
@@ -48,11 +40,10 @@ def get_tasks_for_project(db: Session, project_id: int):
     Get all tasks associated with a specific project.
     """
     return db.query(models.Task).filter(models.Task.project_id == project_id).all()
+# In get_projects function:
+def get_projects(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
+    return db.query(models.Project).join(models.User, models.Project.manager_id == models.User.id).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
 
-# --- MODIFY THIS FUNCTION ---
+# In get_all_tasks function:
 def get_all_tasks(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
-    """
-    Get a list of all tasks for a specific organization.
-    """
     return db.query(models.Task).join(models.User, models.Task.assignee_id == models.User.id).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
-# --------------------------

@@ -46,6 +46,7 @@ def create_user_by_admin(
     return crud.create_user_by_admin(db=db, user=user, organization_id=current_user.organization_id)
 
 # --- MODIFY THIS ENDPOINT ---
+# In read_users endpoint:
 @router.get("/", response_model=List[schemas.User])
 def read_users(
     skip: int = 0, 
@@ -53,9 +54,6 @@ def read_users(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    """
-    Retrieve all users for the current user's organization.
-    """
     users = crud.get_users(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
     return users
 # ---------------------------

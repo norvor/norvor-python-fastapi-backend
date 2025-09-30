@@ -71,25 +71,14 @@ def create_activity(db: Session, activity: schemas.ActivityCreate):
     db.refresh(db_activity)
     return db_activity
 
+# In get_contacts function:
 def get_contacts(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
-    """
-    Get a list of all contacts for a specific organization.
-    """
-    # This query joins the Contact and User tables to filter by the user's organization
     return db.query(models.Contact).join(models.User, models.Contact.owner_id == models.User.id).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
-# --------------------------
 
-# --- MODIFY THIS FUNCTION ---
+# In get_deals function:
 def get_deals(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
-    """
-    Get a list of all deals for a specific organization.
-    """
     return db.query(models.Deal).join(models.User, models.Deal.owner_id == models.User.id).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
-# --------------------------
 
-# --- MODIFY THIS FUNCTION ---
+# In get_activities function:
 def get_activities(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
-    """
-    Get a list of all activities for a specific organization.
-    """
     return db.query(models.Activity).join(models.User, models.Activity.user_id == models.User.id).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()

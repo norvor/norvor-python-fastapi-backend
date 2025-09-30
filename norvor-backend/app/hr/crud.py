@@ -32,12 +32,9 @@ def get_time_off_requests_for_user(db: Session, user_id: UUID):
 # --------------------------
 
 # --- MODIFY THIS FUNCTION ---
+# In get_all_time_off_requests function:
 def get_all_time_off_requests(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
-    """
-    Get a list of all time-off requests for a specific organization.
-    """
     return db.query(models.TimeOffRequest).join(models.User, models.TimeOffRequest.user_id == models.User.id).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
-# --------------------------
 
 def update_time_off_request_status(db: Session, request_id: int, status: models.RequestStatus):
     """

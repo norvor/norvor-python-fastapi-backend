@@ -17,12 +17,12 @@ def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
 
 # --- MODIFY THIS FUNCTION ---
+# In get_users function:
 def get_users(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
     """
     Get a list of users for a specific organization, with pagination.
     """
     return db.query(models.User).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
-# --------------------------
 
 def create_user(db: Session, user: schemas.UserCreate):
     """
