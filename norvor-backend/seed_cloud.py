@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-import uuid # --- ADD THIS IMPORT ---
+import uuid
 
 # Add the project's root directory to the Python path.
 project_root = Path(__file__).resolve().parent
@@ -22,50 +22,52 @@ user_ids = {
 }
 # ------------------------------------
 
-ORGANIZATION_DATA = { "id": 1, "name": "QuantumLeap Dynamics" }
+# --- REMOVED "id": 1 FROM THIS DICTIONARY ---
+ORGANIZATION_DATA = { "name": "QuantumLeap Dynamics" }
+# -----------------------------------------
 
 # --- UPDATE ALL FOREIGN KEYS TO USE THE STATIC UUIDs ---
 ACTIVITIES_DATA = [
-    {"id": 1001, "type": "Call", "notes": "Initial discovery call with Fintech Innovators.", "date": date(2025, 9, 20), "contact_id": 101, "user_id": user_ids["chloe"]},
-    {"id": 1002, "type": "Email", "notes": "Sent Project Phoenix proposal to Fintech.", "date": date(2025, 9, 25), "contact_id": 101, "user_id": user_ids["chloe"]},
-    {"id": 1003, "type": "Meeting", "notes": "Met with HealthBridge team to discuss integration.", "date": date(2025, 9, 28), "contact_id": 102, "user_id": user_ids["chloe"]},
+    {"id": 1001, "type": models.ActivityType.CALL, "notes": "Initial discovery call with Fintech Innovators.", "date": date(2025, 9, 20), "contact_id": 101, "user_id": user_ids["chloe"]},
+    {"id": 1002, "type": models.ActivityType.EMAIL, "notes": "Sent Project Phoenix proposal to Fintech.", "date": date(2025, 9, 25), "contact_id": 101, "user_id": user_ids["chloe"]},
+    {"id": 1003, "type": models.ActivityType.MEETING, "notes": "Met with HealthBridge team to discuss integration.", "date": date(2025, 9, 28), "contact_id": 102, "user_id": user_ids["chloe"]},
 ]
 
 USERS_DATA = [
-    {"id": user_ids["anya"], "name": "Anya Sharma", "email": "anya.sharma@quantumleap.dev", "role": "Executive", "title": "Chief Executive Officer", "department": "Executive", "avatar": "https://i.pravatar.cc/150?u=anya.sharma", "organization_id": 1},
-    {"id": user_ids["ben"], "name": "Ben Carter", "email": "ben.carter@quantumleap.dev", "role": "Management", "title": "VP of Sales", "department": "Sales", "avatar": "https://i.pravatar.cc/150?u=ben.carter", "organization_id": 1},
-    {"id": user_ids["chloe"], "name": "Chloe Davis", "email": "chloe.davis@quantumleap.dev", "role": "Team", "title": "Account Executive", "department": "Sales", "manager_id": user_ids["ben"], "avatar": "https://i.pravatar.cc/150?u=chloe.davis", "organization_id": 1},
-    {"id": user_ids["david"], "name": "David Rodriguez", "email": "david.r@quantumleap.dev", "role": "Management", "title": "Engineering Lead", "department": "Engineering", "avatar": "https://i.pravatar.cc/150?u=david.r", "organization_id": 1},
-    {"id": user_ids["eva"], "name": "Eva Martinez", "email": "eva.martinez@quantumleap.dev", "role": "Team", "title": "Senior Frontend Developer", "department": "Engineering", "manager_id": user_ids["david"], "avatar": "https://i.pravatar.cc/150?u=eva.martinez", "organization_id": 1},
+    {"id": user_ids["anya"], "name": "Anya Sharma", "email": "anya.sharma@quantumleap.dev", "role": models.UserRole.EXECUTIVE, "title": "Chief Executive Officer", "department": "Executive", "avatar": "https://i.pravatar.cc/150?u=anya.sharma"},
+    {"id": user_ids["ben"], "name": "Ben Carter", "email": "ben.carter@quantumleap.dev", "role": models.UserRole.MANAGEMENT, "title": "VP of Sales", "department": "Sales", "avatar": "https://i.pravatar.cc/150?u=ben.carter"},
+    {"id": user_ids["chloe"], "name": "Chloe Davis", "email": "chloe.davis@quantumleap.dev", "role": models.UserRole.TEAM, "title": "Account Executive", "department": "Sales", "manager_id": user_ids["ben"], "avatar": "https://i.pravatar.cc/150?u=chloe.davis"},
+    {"id": user_ids["david"], "name": "David Rodriguez", "email": "david.r@quantumleap.dev", "role": models.UserRole.MANAGEMENT, "title": "Engineering Lead", "department": "Engineering", "avatar": "https://i.pravatar.cc/150?u=david.r"},
+    {"id": user_ids["eva"], "name": "Eva Martinez", "email": "eva.martinez@quantumleap.dev", "role": models.UserRole.TEAM, "title": "Senior Frontend Developer", "department": "Engineering", "manager_id": user_ids["david"], "avatar": "https://i.pravatar.cc/150?u=eva.martinez"},
 ]
 CONTACTS_DATA = [
     {"id": 101, "name": "Fintech Innovators Inc.", "company": "Fintech Innovators", "email": "contact@fintechinnovate.com", "phone": "+91 22 4567 8901", "owner_id": user_ids["chloe"], "created_at": date(2025, 8, 15)},
     {"id": 102, "name": "HealthBridge Solutions", "company": "HealthBridge", "email": "support@healthbridge.io", "phone": "+91 80 1234 5678", "owner_id": user_ids["chloe"], "created_at": date(2025, 9, 1)},
 ]
 DEALS_DATA = [
-    {"id": 201, "name": "Project Phoenix - Platform Overhaul", "value": 250000.00, "stage": "Negotiation", "contact_id": 101, "owner_id": user_ids["chloe"], "close_date": date(2025, 10, 30)},
-    {"id": 202, "name": "Patient Data API Integration", "value": 120000.00, "stage": "Proposal Sent", "contact_id": 102, "owner_id": user_ids["chloe"], "close_date": date(2025, 11, 20)},
+    {"id": 201, "name": "Project Phoenix - Platform Overhaul", "value": 250000.00, "stage": models.DealStage.NEGOTIATION, "contact_id": 101, "owner_id": user_ids["chloe"], "close_date": date(2025, 10, 30)},
+    {"id": 202, "name": "Patient Data API Integration", "value": 120000.00, "stage": models.DealStage.PROPOSAL_SENT, "contact_id": 102, "owner_id": user_ids["chloe"], "close_date": date(2025, 11, 20)},
 ]
 PROJECTS_DATA = [
-    {"id": 301, "name": "Q4 Product Launch: 'Odyssey'", "manager_id": user_ids["david"], "status": "On Track", "progress": 65, "start_date": date(2025, 9, 1), "end_date": date(2025, 12, 15), "member_ids": [str(user_ids["eva"])]},
+    {"id": 301, "name": "Q4 Product Launch: 'Odyssey'", "manager_id": user_ids["david"], "status": models.ProjectStatus.ON_TRACK, "progress": 65, "start_date": date(2025, 9, 1), "end_date": date(2025, 12, 15), "member_ids": [str(user_ids["eva"])]},
 ]
 TASKS_DATA = [
-    {"id": 401, "name": "Finalize UI/UX Mockups", "description": "Complete all Figma mockups for the Odyssey dashboard.", "status": "In Progress", "assignee_id": user_ids["eva"], "project_id": 301, "due_date": date(2025, 10, 10)},
-    {"id": 402, "name": "Setup Staging Environment", "description": "Deploy the latest build to the staging server for QA.", "status": "To Do", "assignee_id": user_ids["eva"], "project_id": 301, "due_date": date(2025, 10, 15)},
+    {"id": 401, "name": "Finalize UI/UX Mockups", "description": "Complete all Figma mockups for the Odyssey dashboard.", "status": models.TaskStatus.IN_PROGRESS, "assignee_id": user_ids["eva"], "project_id": 301, "due_date": date(2025, 10, 10)},
+    {"id": 402, "name": "Setup Staging Environment", "description": "Deploy the latest build to the staging server for QA.", "status": models.TaskStatus.TO_DO, "assignee_id": user_ids["eva"], "project_id": 301, "due_date": date(2025, 10, 15)},
 ]
 TIMEOFF_DATA = [
-    {"id": 501, "user_id": user_ids["eva"], "type": "Vacation", "start_date": date(2025, 10, 20), "end_date": date(2025, 10, 24), "status": "Approved", "reason": "Diwali family trip."},
+    {"id": 501, "user_id": user_ids["eva"], "type": models.LeaveType.VACATION, "start_date": date(2025, 10, 20), "end_date": date(2025, 10, 24), "status": models.RequestStatus.APPROVED, "reason": "Diwali family trip."},
 ]
 ORGANISER_DATA = [
-    {"id": "org_root", "parent_id": None, "type": "Department", "label": "QuantumLeap Dynamics", "properties": {"CEO": "Anya Sharma"}},
-    {"id": "dept_sales", "parent_id": "org_root", "type": "Department", "label": "Sales", "properties": {"Head": "Ben Carter"}},
-    {"id": "team_sales_west", "parent_id": "dept_sales", "type": "Team", "label": "West Coast Sales", "properties": {}},
+    {"id": "org_root", "parent_id": None, "type": models.OrganiserElementType.DEPARTMENT, "label": "QuantumLeap Dynamics", "properties": {"CEO": "Anya Sharma"}},
+    {"id": "dept_sales", "parent_id": "org_root", "type": models.OrganiserElementType.DEPARTMENT, "label": "Sales", "properties": {"Head": "Ben Carter"}},
+    {"id": "team_sales_west", "parent_id": "dept_sales", "type": models.OrganiserElementType.TEAM, "label": "West Coast Sales", "properties": {}},
 ]
 DOCS_DATA = [
     {"id": "doc_onboarding", "parent_id": None, "title": "🚀 Welcome to QuantumLeap!", "icon": "🚀", "content": "<h1>Your journey starts here.</h1><p>This is the central knowledge base.</p>"},
 ]
 TICKETS_DATA = [
-    {"id": 601, "title": "Access to Figma designs for 'Odyssey'", "description": "Hey team, I can't seem to access the latest mockups for the Q4 launch.", "status": "Open", "submitted_by": user_ids["eva"], "team_id": "alpha_squad", "created_at": datetime(2025, 9, 28, 10, 0, 0)},
+    {"id": 601, "title": "Access to Figma designs for 'Odyssey'", "description": "Hey team, I can't seem to access the latest mockups for the Q4 launch.", "status": models.TicketStatus.OPEN, "submitted_by": user_ids["eva"], "team_id": "alpha_squad", "created_at": datetime(2025, 9, 28, 10, 0, 0)},
 ]
 
 # -------------------------------------------------------------------
@@ -89,11 +91,14 @@ def seed_database(db: Session):
     db_org = models.Organization(**ORGANIZATION_DATA)
     db.add(db_org)
     db.commit()
+    db.refresh(db_org) # Refresh to get the auto-generated ID
 
+    # Link all users to the newly created organization
     for user_data in USERS_DATA:
+        user_data["organization_id"] = db_org.id
         db_user = models.User(
             **user_data,
-            hashed_password="password123"
+            hashed_password=get_password_hash("password123")
         )
         db.add(db_user)
     db.commit()

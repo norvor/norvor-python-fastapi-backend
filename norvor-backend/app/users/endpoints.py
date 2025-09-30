@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from uuid import UUID # --- ADD THIS IMPORT ---
+from uuid import UUID
 
 from . import crud, schemas
 from ..db.session import get_db
@@ -10,7 +10,6 @@ from .. import models
 
 router = APIRouter()
 
-# 1. GET /me (Specific path)
 @router.get("/me", response_model=schemas.User)
 def read_users_me(current_user: schemas.User = Depends(get_current_user)):
     """
@@ -18,7 +17,6 @@ def read_users_me(current_user: schemas.User = Depends(get_current_user)):
     """
     return current_user
 
-# 2. POST / (Root, for public creation)
 @router.post("/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     """
@@ -29,7 +27,6 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already registered")
     return crud.create_user(db=db, user=user)
 
-# 3. POST /create_by_admin (Specific path)
 @router.post("/create_by_admin", response_model=schemas.User)
 def create_user_by_admin(
     user: schemas.UserCreateByAdmin, 
@@ -48,17 +45,21 @@ def create_user_by_admin(
         
     return crud.create_user_by_admin(db=db, user=user, organization_id=current_user.organization_id)
 
-# 4. GET / (List all users)
-@router.get("/", response_model=List[schemas.User])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """
-    Retrieve all users.
-    """
-    users = crud.get_users(db, skip=skip, limit=limit)
-    return users
-
 # --- MODIFY THIS ENDPOINT ---
-# 5. GET /{user_id} (Dynamic path with parameter)
+@router.get("/", response_model=List[schemas.User])
+def read_users(
+    skip: int = 0, 
+    limit: int = 100, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Retrieve all users for the current user's organization.
+    """
+    users = crud.get_users(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
+    return users
+# ---------------------------
+
 @router.get("/{user_id}", response_model=schemas.User)
 def read_user(user_id: UUID, db: Session = Depends(get_db)):
     """
@@ -68,10 +69,7 @@ def read_user(user_id: UUID, db: Session = Depends(get_db)):
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
-# ---------------------------
 
-# --- MODIFY THIS ENDPOINT ---
-# 6. PUT /{user_id} (Dynamic path with parameter)
 @router.put("/{user_id}", response_model=schemas.User)
 def update_user_details(user_id: UUID, user_update: schemas.UserUpdate, db: Session = Depends(get_db)):
     """
@@ -81,4 +79,3 @@ def update_user_details(user_id: UUID, user_update: schemas.UserUpdate, db: Sess
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
-# ---------------------------

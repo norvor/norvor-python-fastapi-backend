@@ -1,16 +1,14 @@
 from sqlalchemy.orm import Session
-from uuid import UUID # --- ADD THIS IMPORT ---
+from uuid import UUID
 from . import schemas
 from .. import models
 from ..auth.security import get_password_hash
 
-# --- MODIFY THIS FUNCTION ---
 def get_user(db: Session, user_id: UUID):
     """
     Get a single user by their ID.
     """
     return db.query(models.User).filter(models.User.id == user_id).first()
-# --------------------------
 
 def get_user_by_email(db: Session, email: str):
     """
@@ -18,11 +16,13 @@ def get_user_by_email(db: Session, email: str):
     """
     return db.query(models.User).filter(models.User.email == email).first()
 
-def get_users(db: Session, skip: int = 0, limit: int = 100):
+# --- MODIFY THIS FUNCTION ---
+def get_users(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
     """
-    Get a list of users, with pagination (skip and limit).
+    Get a list of users for a specific organization, with pagination.
     """
-    return db.query(models.User).offset(skip).limit(limit).all()
+    return db.query(models.User).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
+# --------------------------
 
 def create_user(db: Session, user: schemas.UserCreate):
     """
@@ -69,7 +69,6 @@ def create_user_by_admin(db: Session, user: schemas.UserCreateByAdmin, organizat
     db.refresh(db_user)
     return db_user
 
-# --- MODIFY THIS FUNCTION ---
 def update_user(db: Session, user_id: UUID, user_update: schemas.UserUpdate):
     """
     Update an existing user's details (e.g., role, name).
@@ -84,4 +83,3 @@ def update_user(db: Session, user_id: UUID, user_update: schemas.UserUpdate):
         db.commit()
         db.refresh(db_user)
     return db_user
-# --------------------------
