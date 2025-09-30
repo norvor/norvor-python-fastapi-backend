@@ -83,6 +83,27 @@ def read_deals(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), c
     deals = crud.get_deals(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
     return deals
 
+@router.put("/deals/{deal_id}", response_model=schemas.Deal)
+def update_deal(deal_id: int, deal: schemas.DealUpdate, db: Session = Depends(get_db)):
+    """
+    Update an existing deal.
+    """
+    db_deal = crud.update_deal(db, deal_id=deal_id, deal_update=deal)
+    if db_deal is None:
+        raise HTTPException(status_code=404, detail="Deal not found")
+    return db_deal
+
+@router.delete("/deals/{deal_id}", response_model=schemas.Deal)
+def delete_deal(deal_id: int, db: Session = Depends(get_db)):
+    """
+    Delete a deal.
+    """
+    db_deal = crud.delete_deal(db, deal_id=deal_id)
+    if db_deal is None:
+        raise HTTPException(status_code=404, detail="Deal not found")
+    return db_deal
+
+
 # --- Activity Endpoints ---
 @router.post("/activities/", response_model=schemas.Activity)
 def create_activity(activity: schemas.ActivityCreate, db: Session = Depends(get_db)):
