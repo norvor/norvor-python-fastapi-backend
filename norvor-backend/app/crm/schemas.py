@@ -1,10 +1,10 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
-from datetime import date
+from datetime import date, datetime
 from uuid import UUID
-from ..models import DealStage, ActivityType
+from ..models import DealStage, ActivityType, CrmTaskStatus # Import CrmTaskStatus
 
-# --- NEW COMPANY SCHEMAS ---
+# --- Company Schemas ---
 class CompanyBase(BaseModel):
     name: str
     domain: Optional[str] = None
@@ -18,10 +18,8 @@ class Company(CompanyBase):
 
     class Config:
         from_attributes = True
-# -------------------------
 
-# --- Contact Schemas (Updated) ---
-
+# --- Contact Schemas ---
 class ContactBase(BaseModel):
     name: str
     email: EmailStr
@@ -29,7 +27,7 @@ class ContactBase(BaseModel):
 
 class ContactCreate(ContactBase):
     owner_id: Optional[UUID] = None
-    company_id: Optional[int] = None # Link to Company
+    company_id: Optional[int] = None
 
 class ContactUpdate(BaseModel):
     name: Optional[str] = None
@@ -47,8 +45,7 @@ class Contact(ContactBase):
     class Config:
         from_attributes = True
 
-# --- Deal Schemas (Updated) ---
-
+# --- Deal Schemas ---
 class DealBase(BaseModel):
     name: str
     value: float
@@ -58,7 +55,7 @@ class DealBase(BaseModel):
 class DealCreate(DealBase):
     owner_id: UUID
     contact_id: int
-    company_id: int # Deals should also link to a company
+    company_id: int
 
 class DealUpdate(BaseModel):
     name: Optional[str] = None
@@ -77,8 +74,7 @@ class Deal(DealBase):
     class Config:
         from_attributes = True
         
-# --- Activity Schemas (No Changes) ---
-
+# --- Activity Schemas ---
 class ActivityBase(BaseModel):
     type: ActivityType
     notes: Optional[str] = None
@@ -91,6 +87,32 @@ class ActivityCreate(ActivityBase):
 
 class Activity(ActivityBase):
     id: int
+
+    class Config:
+        from_attributes = True
+
+# --- NEW CRM TASK SCHEMAS ---
+class CrmTaskBase(BaseModel):
+    title: str
+    due_date: datetime
+    status: CrmTaskStatus = CrmTaskStatus.NOT_STARTED
+
+class CrmTaskCreate(CrmTaskBase):
+    owner_id: UUID
+    contact_id: Optional[int] = None
+    deal_id: Optional[int] = None
+
+class CrmTaskUpdate(BaseModel):
+    title: Optional[str] = None
+    due_date: Optional[datetime] = None
+    status: Optional[CrmTaskStatus] = None
+    owner_id: Optional[UUID] = None
+
+class CrmTask(CrmTaskBase):
+    id: int
+    owner_id: UUID
+    contact_id: Optional[int] = None
+    deal_id: Optional[int] = None
 
     class Config:
         from_attributes = True

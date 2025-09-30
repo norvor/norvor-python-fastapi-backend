@@ -105,13 +105,11 @@ class User(Base):
     organization = relationship("Organization", back_populates="users")
     manager = relationship("User", remote_side=[id], backref="direct_reports")
     
-    # Back-populates from other models that link to User
     projects = relationship("Project", back_populates="manager")
     assigned_tasks = relationship("Task", back_populates="assignee")
     time_off_requests = relationship("TimeOffRequest", back_populates="user")
     submitted_tickets = relationship("Ticket", back_populates="submitter")
     
-    # CRM-specific relationships
     owned_contacts = relationship("Contact", back_populates="owner")
     owned_deals = relationship("Deal", back_populates="owner")
     owned_crm_tasks = relationship("CrmTask", back_populates="owner")
@@ -186,8 +184,6 @@ class Activity(Base):
 
     contact = relationship("Contact", back_populates="activities")
     user = relationship("User", back_populates="logged_activities")
-
-# --- Other Application Models ---
 
 class Project(Base):
     __tablename__ = "projects"

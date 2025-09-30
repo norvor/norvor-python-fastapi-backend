@@ -11,6 +11,7 @@ from ..auth.security import get_current_user # --- ADD THIS IMPORT ---
 
 router = APIRouter()
 
+
 # --- MODIFY THIS ENDPOINT ---
 @router.get("/tickets/", response_model=List[schemas.Ticket]) 
 def read_all_tickets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
