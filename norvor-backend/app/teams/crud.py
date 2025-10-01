@@ -28,6 +28,9 @@ def create_team(db: Session, team: schemas.TeamCreate):
 def get_team(db: Session, team_id: UUID):
     return db.query(models.Team).filter(models.Team.id == team_id).first()
 
+def get_teams_by_org(db: Session, org_id: int):
+    return db.query(models.Team).join(models.Department).filter(models.Department.organization_id == org_id).all()
+
 # TeamRole CRUD
 def create_team_role(db: Session, team_role: schemas.TeamRoleCreate):
     db_team_role = models.TeamRole(**team_role.dict())

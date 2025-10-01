@@ -67,6 +67,17 @@ class TicketStatus(str, enum.Enum):
     OPEN = 'Open'
     IN_PROGRESS = 'In Progress'
     CLOSED = 'Closed'
+    
+# --- NEW TOOL ENUM ---
+class Tool(str, enum.Enum):
+    CRM = "crm"
+    PROJECTS = "pm"
+    DOCS = "docs"
+    HR = "hr"
+    REQUESTS = "requests"
+    DATALABS = "datalabs"
+# --------------------
+
 
 # --- Models ---
 
@@ -106,6 +117,9 @@ class Team(Base):
     immutable = Column(Boolean, default=False)
     active = Column(Boolean, default=True)
     team_leader_id = Column(UUID(as_uuid=True), ForeignKey("team_roles.id"), nullable=True)
+    # --- ADD THIS LINE ---
+    tools = Column(ARRAY(Enum(Tool)), default=[])
+    # --------------------
     
     department = relationship("Department", back_populates="teams")
     team_roles = relationship("TeamRole", back_populates="team", foreign_keys="[TeamRole.team_id]")
@@ -148,7 +162,6 @@ class DataCup(Base):
     contacts = relationship("Contact", back_populates="data_cup") # <-- ADDED
 
 class User(Base):
-    # ... (User model remains the same) ...
     __tablename__ = "users"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, index=True)
@@ -181,7 +194,6 @@ class User(Base):
 
 
 class Company(Base):
-    # ... (Company model remains the same) ...
     __tablename__ = "companies"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
@@ -211,7 +223,6 @@ class Contact(Base):
     crm_tasks = relationship("CrmTask", back_populates="contact")
     data_cup = relationship("DataCup", back_populates="contacts") # <-- ADDED
 
-# ... (Deal, CrmTask, Activity, Project, Task, TimeOffRequest, Doc, Ticket models remain mostly the same) ...
 
 class Deal(Base):
     __tablename__ = "deals"

@@ -24,6 +24,10 @@ def read_departments(db: Session = Depends(get_db), current_user: models.User = 
 def create_team(team: schemas.TeamCreate, db: Session = Depends(get_db)):
     return crud.create_team(db=db, team=team)
 
+@router.get("/teams/", response_model=List[schemas.Team])
+def read_teams(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    return crud.get_teams_by_org(db, org_id=current_user.organization_id)
+
 @router.get("/teams/{team_id}", response_model=schemas.Team)
 def read_team(team_id: UUID, db: Session = Depends(get_db)):
     db_team = crud.get_team(db, team_id=team_id)

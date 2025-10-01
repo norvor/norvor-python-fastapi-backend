@@ -3,7 +3,6 @@ from pathlib import Path
 import uuid
 from sqlalchemy.orm import Session
 from datetime import datetime, date, timedelta
-from app.auth.security import get_password_hash
 
 # Add the project's root directory to the Python path.
 project_root = Path(__file__).resolve().parent
@@ -11,6 +10,7 @@ sys.path.append(str(project_root))
 
 from app.db.session import SessionLocal
 from app import models
+from app.auth.security import get_password_hash
 
 def seed_organization(db: Session, org_name: str, user_data: list, company_data: list, contact_data: list, deal_data: list):
     """
@@ -25,8 +25,11 @@ def seed_organization(db: Session, org_name: str, user_data: list, company_data:
     db.refresh(db_org)
     org_id = db_org.id
     print(f"Created organization '{org_name}' with ID: {org_id}")
-    hashed_password = get_password_hash("password123")   
+
     # 2. Create Users
+
+    hashed_password = get_password_hash("password123")
+
     users = {}
     for u_data in user_data:
         user = models.User(
@@ -36,7 +39,7 @@ def seed_organization(db: Session, org_name: str, user_data: list, company_data:
             role=u_data["role"],
             title=u_data["title"],
             is_system_administrator=u_data.get("is_system_administrator", False),
-            hashed_password=hashed_password,
+            hashed_password=hashed_password, # In a real app, use get_password_hash
             organization_id=org_id
         )
         db.add(user)
@@ -56,8 +59,16 @@ def seed_organization(db: Session, org_name: str, user_data: list, company_data:
     print("Created Departments and Data Buckets.")
 
     # 4. Create Teams and Data Bowls
-    sales_team = models.Team(name="Account Executives", department_id=sales_dept.id)
-    eng_team = models.Team(name="Core Product", department_id=eng_dept.id)
+    sales_team = models.Team(
+        name="Account Executives", 
+        department_id=sales_dept.id,
+        tools=[models.Tool.CRM, models.Tool.DOCS, models.Tool.REQUESTS]
+    )
+    eng_team = models.Team(
+        name="Core Product", 
+        department_id=eng_dept.id,
+        tools=[models.Tool.PROJECTS, models.Tool.DOCS, models.Tool.REQUESTS]
+    )
     db.add_all([sales_team, eng_team])
     db.commit()
     sales_bowl = models.DataBowl(team_id=sales_team.id, data_bucket_id=sales_bucket.id)

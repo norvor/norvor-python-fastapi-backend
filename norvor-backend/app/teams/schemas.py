@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from uuid import UUID
+from ..models import Tool
 
 class TeamRoleBase(BaseModel):
     user_id: UUID
@@ -17,7 +18,7 @@ class TeamRole(TeamRoleBase):
         from_attributes = True
 
 class DataCupBase(BaseModel):
-    data_bowl_id: UUID # <-- CHANGED
+    data_bowl_id: UUID 
     team_role_id: Optional[UUID] = None
 
 
@@ -49,6 +50,7 @@ class TeamBase(BaseModel):
     department_id: UUID
     immutable: bool = False
     active: bool = True
+    tools: List[Tool] = []
 
 class TeamCreate(TeamBase):
     pass
