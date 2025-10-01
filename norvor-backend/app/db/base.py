@@ -16,5 +16,7 @@ from ..models import (
     Team,
     TeamRole,
     DataCup,
-    DataBowl
+    DataBowl,
+    Activity,
+    CrmTask,
 )
