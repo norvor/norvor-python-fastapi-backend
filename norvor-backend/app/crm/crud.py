@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 from . import schemas
 from .. import models
 import datetime
+from uuid import UUID
+
 
 # --- Company CRUD Functions ---
 def create_company(db: Session, company: schemas.CompanyCreate, organization_id: int):
