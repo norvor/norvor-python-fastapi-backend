@@ -3,6 +3,7 @@ from typing import List
 
 from . import schemas
 from .. import models
+from uuid import UUID
 
 # --- Project CRUD Functions ---
 

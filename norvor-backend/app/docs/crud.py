@@ -4,6 +4,8 @@ import uuid
 
 from . import schemas
 from .. import models
+from uuid import UUID
+
 
 def create_doc(db: Session, doc: schemas.DocCreate):
     """
@@ -47,12 +49,12 @@ def update_doc(db: Session, doc_id: str, doc_update: schemas.DocUpdate):
         db.refresh(db_doc)
     return db_doc
 
-@router.get("/my_projects/", response_model=List[schemas.Project])
-def read_my_projects(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def get_docs_for_user(db: Session, user_id: UUID):
     """
-    Retrieve all projects for the current user from all their DataCups using an optimized query.
+    Get all documents for a user in a single, optimized query using JOINs.
     """
-    return crud.get_projects_for_user(db, user_id=current_user.id)
+    return db.query(models.Doc).join(models.DataCup).join(models.TeamRole).filter(models.TeamRole.user_id == user_id).all()
+
 
 
 def delete_doc(db: Session, doc_id: str):
