@@ -67,8 +67,7 @@ class TicketStatus(str, enum.Enum):
     OPEN = 'Open'
     IN_PROGRESS = 'In Progress'
     CLOSED = 'Closed'
-    
-# --- NEW TOOL ENUM ---
+
 class Tool(str, enum.Enum):
     CRM = "crm"
     PROJECTS = "pm"
@@ -76,8 +75,6 @@ class Tool(str, enum.Enum):
     HR = "hr"
     REQUESTS = "requests"
     DATALABS = "datalabs"
-# --------------------
-
 
 # --- Models ---
 
@@ -90,6 +87,7 @@ class Organization(Base):
     users = relationship("User", back_populates="organization")
     companies = relationship("Company", back_populates="organization")
     departments = relationship("Department", back_populates="organization")
+    organiser_elements = relationship("OrganiserElement", back_populates="organization")
 
 class Department(Base):
     __tablename__ = "departments"
@@ -99,7 +97,7 @@ class Department(Base):
     
     organization = relationship("Organization", back_populates="departments")
     teams = relationship("Team", back_populates="department")
-    data_bucket = relationship("DataBucket", uselist=False, back_populates="department") # <-- ONE-TO-ONE
+    data_bucket = relationship("DataBucket", uselist=False, back_populates="department") 
 
 class DataBucket(Base):
     __tablename__ = "data_buckets"
@@ -107,7 +105,7 @@ class DataBucket(Base):
     department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id"))
     
     department = relationship("Department", back_populates="data_bucket")
-    data_bowls = relationship("DataBowl", back_populates="data_bucket") # <-- ONE-TO-MANY
+    data_bowls = relationship("DataBowl", back_populates="data_bucket")
 
 class Team(Base):
     __tablename__ = "teams"
@@ -117,9 +115,7 @@ class Team(Base):
     immutable = Column(Boolean, default=False)
     active = Column(Boolean, default=True)
     team_leader_id = Column(UUID(as_uuid=True), ForeignKey("team_roles.id"), nullable=True)
-    # --- ADD THIS LINE ---
     tools = Column(ARRAY(Enum(Tool)), default=[])
-    # --------------------
     
     department = relationship("Department", back_populates="teams")
     team_roles = relationship("TeamRole", back_populates="team", foreign_keys="[TeamRole.team_id]")
@@ -130,12 +126,12 @@ class DataBowl(Base):
     __tablename__ = "data_bowls"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"))
-    data_bucket_id = Column(UUID(as_uuid=True), ForeignKey("data_buckets.id")) # <-- ADDED
+    data_bucket_id = Column(UUID(as_uuid=True), ForeignKey("data_buckets.id"))
     master_owner_team = Column(UUID(as_uuid=True))
 
     team = relationship("Team", back_populates="data_bowl")
-    data_bucket = relationship("DataBucket", back_populates="data_bowls") # <-- ADDED
-    data_cups = relationship("DataCup", back_populates="data_bowl") # <-- ONE-TO-MANY
+    data_bucket = relationship("DataBucket", back_populates="data_bowls")
+    data_cups = relationship("DataCup", back_populates="data_bowl")
 
 class TeamRole(Base):
     __tablename__ = "team_roles"
@@ -151,15 +147,15 @@ class TeamRole(Base):
 class DataCup(Base):
     __tablename__ = "data_cups"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    data_bowl_id = Column(UUID(as_uuid=True), ForeignKey("data_bowls.id")) # <-- CHANGED
+    data_bowl_id = Column(UUID(as_uuid=True), ForeignKey("data_bowls.id"))
     team_role_id = Column(UUID(as_uuid=True), ForeignKey("team_roles.id"), nullable=True)
     
-    data_bowl = relationship("DataBowl", back_populates="data_cups") # <-- CHANGED
+    data_bowl = relationship("DataBowl", back_populates="data_cups")
     team_role = relationship("TeamRole", back_populates="data_cup")
     deals = relationship("Deal", back_populates="data_cup")
     docs = relationship("Doc", back_populates="data_cup")
     projects = relationship("Project", back_populates="data_cup")
-    contacts = relationship("Contact", back_populates="data_cup") # <-- ADDED
+    contacts = relationship("Contact", back_populates="data_cup")
 
 class User(Base):
     __tablename__ = "users"
@@ -177,6 +173,9 @@ class User(Base):
     address = Column(String, nullable=True)
     emergency_contact = Column(String, nullable=True)
     leave_balance = Column(JSON, nullable=True)
+    # --- ADD THIS LINE ---
+    department = Column(String, nullable=True)
+    # --------------------
 
     organization = relationship("Organization", back_populates="users")
     manager = relationship("User", remote_side=[id], backref="direct_reports")
@@ -214,15 +213,14 @@ class Contact(Base):
     phone = Column(String, nullable=True)
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     created_at = Column(Date)
-    data_cup_id = Column(UUID(as_uuid=True), ForeignKey("data_cups.id")) # <-- ADDED
+    data_cup_id = Column(UUID(as_uuid=True), ForeignKey("data_cups.id"))
     
     owner = relationship("User", back_populates="owned_contacts")
     company = relationship("Company", back_populates="contacts")
     deals = relationship("Deal", back_populates="contact")
     activities = relationship("Activity", back_populates="contact")
     crm_tasks = relationship("CrmTask", back_populates="contact")
-    data_cup = relationship("DataCup", back_populates="contacts") # <-- ADDED
-
+    data_cup = relationship("DataCup", back_populates="contacts")
 
 class Deal(Base):
     __tablename__ = "deals"
@@ -336,3 +334,16 @@ class Ticket(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     submitter = relationship("User", back_populates="submitted_tickets")
+
+class OrganiserElement(Base):
+    __tablename__ = 'organiser_elements'
+    id = Column(String, primary_key=True, index=True, default=lambda: f"el_{uuid.uuid4().hex}")
+    organization_id = Column(Integer, ForeignKey('organizations.id'))
+    parent_id = Column(String, ForeignKey('organiser_elements.id'), nullable=True)
+    type = Column(String, nullable=False)
+    label = Column(String, nullable=False)
+    properties = Column(JSON, default={})
+    
+    organization = relationship("Organization", back_populates="organiser_elements")
+    parent = relationship("OrganiserElement", remote_side=[id], back_populates="children")
+    children = relationship("OrganiserElement", back_populates="parent")
