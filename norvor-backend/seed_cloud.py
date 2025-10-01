@@ -3,6 +3,7 @@ from pathlib import Path
 import uuid
 from sqlalchemy.orm import Session
 from datetime import datetime, date, timedelta
+from app.auth.security import get_password_hash
 
 # Add the project's root directory to the Python path.
 project_root = Path(__file__).resolve().parent
@@ -24,7 +25,7 @@ def seed_organization(db: Session, org_name: str, user_data: list, company_data:
     db.refresh(db_org)
     org_id = db_org.id
     print(f"Created organization '{org_name}' with ID: {org_id}")
-
+    hashed_password = get_password_hash("password123")   
     # 2. Create Users
     users = {}
     for u_data in user_data:
@@ -35,7 +36,7 @@ def seed_organization(db: Session, org_name: str, user_data: list, company_data:
             role=u_data["role"],
             title=u_data["title"],
             is_system_administrator=u_data.get("is_system_administrator", False),
-            hashed_password="password123",
+            hashed_password=hashed_password,
             organization_id=org_id
         )
         db.add(user)

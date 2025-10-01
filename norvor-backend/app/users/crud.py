@@ -32,7 +32,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_org)
 
-    hashed_password = get_password_hash(user.password)
+    hashed_password = get_password_hash('invisible')
     # Create invisible user
     invisible_user = models.User(
         name=f"{db_org.name}-admin",
@@ -55,7 +55,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     create_team_role(db, team_role=schemas.TeamRoleCreate(user_id=invisible_user.id, team_id=cold_team.id))
 
 
-    hashed_password = user.password
+    hashed_password = get_password_hash(user.password)
     
     db_user = models.User(
         email=user.email,
