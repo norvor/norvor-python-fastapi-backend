@@ -1,161 +1,188 @@
 import sys
 from pathlib import Path
 import uuid
+from sqlalchemy.orm import Session
+from datetime import datetime, date, timedelta
 
 # Add the project's root directory to the Python path.
 project_root = Path(__file__).resolve().parent
 sys.path.append(str(project_root))
 
-from sqlalchemy.orm import Session
 from app.db.session import SessionLocal
 from app import models
-from app.auth.security import get_password_hash
-from datetime import datetime, date, timedelta
 
-# --- STATIC UUIDs FOR CONSISTENT RELATIONSHIPS ---
-user_ids = {
-    "anya": uuid.uuid4(),      # Executive
-    "ben": uuid.uuid4(),        # Sales Manager
-    "david": uuid.uuid4(),      # Eng Lead
-    "chloe": uuid.uuid4(),      # Sales Rep 1
-    "liam": uuid.uuid4(),       # Sales Rep 2
-    "eva": uuid.uuid4(),        # Eng Developer 1
-    "mason": uuid.uuid4(),      # Eng Developer 2
-}
+def seed_organization(db: Session, org_name: str, user_data: list, company_data: list, contact_data: list, deal_data: list):
+    """
+    Seeds a complete organization with all its related data.
+    """
+    print(f"\n--- Seeding Organization: {org_name} ---")
 
-# --- DATA DICTIONARIES ---
-
-ORGANIZATION_DATA = { "name": "QuantumLeap Dynamics" }
-
-USERS_DATA = [
-    # Executive
-    {"id": user_ids["anya"], "name": "Anya Sharma", "email": "anya.sharma@quantumleap.dev", "role": models.UserRole.EXECUTIVE, "title": "Chief Executive Officer", "department": "Executive", "avatar": "https://i.pravatar.cc/150?u=anya.sharma"},
-    
-    # Management
-    {"id": user_ids["ben"], "name": "Ben Carter", "email": "ben.carter@quantumleap.dev", "role": models.UserRole.MANAGEMENT, "title": "VP of Sales", "department": "Sales", "manager_id": user_ids["anya"], "avatar": "https://i.pravatar.cc/150?u=ben.carter"},
-    {"id": user_ids["david"], "name": "David Rodriguez", "email": "david.r@quantumleap.dev", "role": models.UserRole.MANAGEMENT, "title": "Engineering Lead", "department": "Engineering", "manager_id": user_ids["anya"], "avatar": "https://i.pravatar.cc/150?u=david.r"},
-
-    # Team Members
-    {"id": user_ids["chloe"], "name": "Chloe Davis", "email": "chloe.davis@quantumleap.dev", "role": models.UserRole.TEAM, "title": "Senior Account Executive", "department": "Sales", "manager_id": user_ids["ben"], "avatar": "https://i.pravatar.cc/150?u=chloe.davis"},
-    {"id": user_ids["liam"], "name": "Liam Goldberg", "email": "liam.goldberg@quantumleap.dev", "role": models.UserRole.TEAM, "title": "Account Executive", "department": "Sales", "manager_id": user_ids["ben"], "avatar": "https://i.pravatar.cc/150?u=liam.goldberg"},
-    {"id": user_ids["eva"], "name": "Eva Martinez", "email": "eva.martinez@quantumleap.dev", "role": models.UserRole.TEAM, "title": "Senior Frontend Developer", "department": "Engineering", "manager_id": user_ids["david"], "avatar": "https://i.pravatar.cc/150?u=eva.martinez"},
-    {"id": user_ids["mason"], "name": "Mason Lee", "email": "mason.lee@quantumleap.dev", "role": models.UserRole.TEAM, "title": "Backend Developer", "department": "Engineering", "manager_id": user_ids["david"], "avatar": "https://i.pravatar.cc/150?u=mason.lee"},
-]
-
-COMPANIES_DATA = [
-    {"id": 1, "name": "Fintech Innovators Inc.", "domain": "fintechinnovate.com"},
-    {"id": 2, "name": "HealthBridge Solutions", "domain": "healthbridge.io"},
-    {"id": 3, "name": "NextGen Logistics", "domain": "nextgenlogistics.com"},
-    {"id": 4, "name": "Terra Solar", "domain": "terrasolar.com"},
-]
-
-CONTACTS_DATA = [
-    {"id": 101, "name": "Priya Singh", "email": "priya.singh@fintechinnovate.com", "phone": "+91 22 4567 8901", "owner_id": user_ids["chloe"], "company_id": 1, "created_at": date.today() - timedelta(days=45)},
-    {"id": 102, "name": "Rohan Mehta", "email": "rohan.mehta@healthbridge.io", "phone": "+91 80 1234 5678", "owner_id": user_ids["chloe"], "company_id": 2, "created_at": date.today() - timedelta(days=30)},
-    {"id": 103, "name": "Anjali Rao", "email": "anjali.rao@nextgenlogistics.com", "phone": "+91 44 9876 5432", "owner_id": user_ids["liam"], "company_id": 3, "created_at": date.today() - timedelta(days=20)},
-    {"id": 104, "name": "Vikram Desai", "email": "vikram.desai@terrasolar.com", "phone": "+91 11 2345 6789", "owner_id": user_ids["liam"], "company_id": 4, "created_at": date.today() - timedelta(days=10)},
-    {"id": 105, "name": "Suresh Gupta", "email": "suresh.gupta@fintechinnovate.com", "phone": "+91 22 4567 8902", "owner_id": user_ids["chloe"], "company_id": 1, "created_at": date.today() - timedelta(days=5)},
-]
-
-DEALS_DATA = [
-    {"id": 201, "name": "Project Phoenix - Platform Overhaul", "value": 250000.00, "stage": models.DealStage.NEGOTIATION, "company_id": 1, "contact_id": 101, "owner_id": user_ids["chloe"], "close_date": date.today() + timedelta(days=30)},
-    {"id": 202, "name": "Patient Data API Integration", "value": 120000.00, "stage": models.DealStage.PROPOSAL_SENT, "company_id": 2, "contact_id": 102, "owner_id": user_ids["chloe"], "close_date": date.today() + timedelta(days=45)},
-    {"id": 203, "name": "Supply Chain Automation Suite", "value": 180000.00, "stage": models.DealStage.NEW_LEAD, "company_id": 3, "contact_id": 103, "owner_id": user_ids["liam"], "close_date": date.today() + timedelta(days=60)},
-    {"id": 204, "name": "Solar Panel Fleet Management Software", "value": 95000.00, "stage": models.DealStage.WON, "company_id": 4, "contact_id": 104, "owner_id": user_ids["liam"], "close_date": date.today() - timedelta(days=15)},
-    {"id": 205, "name": "Fintech Security Audit", "value": 45000.00, "stage": models.DealStage.LOST, "company_id": 1, "contact_id": 105, "owner_id": user_ids["chloe"], "close_date": date.today() - timedelta(days=5)},
-]
-
-CRM_TASKS_DATA = [
-    {"title": "Follow up on Project Phoenix proposal", "due_date": datetime.now() + timedelta(days=2), "status": models.CrmTaskStatus.NOT_STARTED, "owner_id": user_ids["chloe"], "deal_id": 201},
-    {"title": "Schedule demo for HealthBridge API", "due_date": datetime.now() + timedelta(days=5), "status": models.CrmTaskStatus.NOT_STARTED, "owner_id": user_ids["chloe"], "deal_id": 202},
-    {"title": "Send initial outreach email to Anjali Rao", "due_date": datetime.now() - timedelta(days=1), "status": models.CrmTaskStatus.COMPLETED, "owner_id": user_ids["liam"], "contact_id": 103},
-]
-
-ACTIVITIES_DATA = [
-    {"type": models.ActivityType.CALL, "notes": "Initial discovery call with Priya. Discussed key pain points around their legacy system.", "date": date.today() - timedelta(days=40), "contact_id": 101, "user_id": user_ids["chloe"]},
-    {"type": models.ActivityType.EMAIL, "notes": "Sent over the full Project Phoenix proposal and pricing details.", "date": date.today() - timedelta(days=25), "contact_id": 101, "user_id": user_ids["chloe"]},
-    {"type": models.ActivityType.MEETING, "notes": "Met with Rohan and the HealthBridge tech team. They have concerns about implementation timelines.", "date": date.today() - timedelta(days=10), "contact_id": 102, "user_id": user_ids["chloe"]},
-    {"type": models.ActivityType.NOTE, "notes": "Liam noted that NextGen is also evaluating a competitor. Speed is key.", "date": date.today() - timedelta(days=5), "contact_id": 103, "user_id": user_ids["ben"]},
-]
-
-# --- Other Data (for app completeness) ---
-
-PROJECTS_DATA = [
-    {"id": 301, "name": "Q4 Product Launch: 'Odyssey'", "manager_id": user_ids["david"], "status": models.ProjectStatus.ON_TRACK, "progress": 65, "start_date": date(2025, 9, 1), "end_date": date(2025, 12, 15), "member_ids": [str(user_ids["eva"]), str(user_ids["mason"])]},
-]
-
-TASKS_DATA = [
-    {"id": 401, "name": "Finalize UI/UX Mockups", "description": "Complete all Figma mockups for the Odyssey dashboard.", "status": models.TaskStatus.IN_PROGRESS, "assignee_id": user_ids["eva"], "project_id": 301, "due_date": date(2025, 10, 10)},
-    {"id": 402, "name": "Setup Staging Environment API", "description": "Deploy the latest build to the staging server for QA.", "status": models.TaskStatus.TO_DO, "assignee_id": user_ids["mason"], "project_id": 301, "due_date": date(2025, 10, 15)},
-]
-
-TIMEOFF_DATA = [
-    {"id": 501, "user_id": user_ids["eva"], "type": models.LeaveType.VACATION, "start_date": date(2025, 10, 20), "end_date": date(2025, 10, 24), "status": models.RequestStatus.APPROVED, "reason": "Family trip."},
-]
-
-ORGANISER_DATA = [
-    {"id": "dept_sales", "parent_id": None, "type": models.OrganiserElementType.DEPARTMENT, "label": "Sales"},
-    {"id": "dept_eng", "parent_id": None, "type": models.OrganiserElementType.DEPARTMENT, "label": "Engineering"},
-]
-
-def seed_database(db: Session):
-    print("Clearing old data...")
-    # Clear tables in reverse order of dependency to avoid foreign key constraints
-    for table in reversed(models.Base.metadata.sorted_tables):
-        db.execute(table.delete())
-    db.commit()
-
-    print("Seeding new data...")
-    
-    # Create the Organization
-    db_org = models.Organization(**ORGANIZATION_DATA)
+    # 1. Create Organization
+    db_org = models.Organization(name=org_name)
     db.add(db_org)
     db.commit()
     db.refresh(db_org)
     org_id = db_org.id
+    print(f"Created organization '{org_name}' with ID: {org_id}")
 
-    # Create Users
-    for user_data in USERS_DATA:
-        user_data["organization_id"] = org_id
-        db_user = models.User(**user_data, hashed_password="password123")
-        db.add(db_user)
+    # 2. Create Users
+    users = {}
+    for u_data in user_data:
+        user = models.User(
+            id=u_data["id"],
+            name=u_data["name"],
+            email=u_data["email"],
+            role=u_data["role"],
+            title=u_data["title"],
+            is_system_administrator=u_data.get("is_system_administrator", False),
+            hashed_password="password123",
+            organization_id=org_id
+        )
+        db.add(user)
+        users[u_data["key"]] = user
     db.commit()
+    print(f"Created {len(users)} users.")
 
-    # Create Companies
-    for company_data in COMPANIES_DATA:
-        company_data["organization_id"] = org_id
-        db.add(models.Company(**company_data))
+    # 3. Create Departments and Data Buckets
+    sales_dept = models.Department(name="Sales", organization_id=org_id)
+    eng_dept = models.Department(name="Engineering", organization_id=org_id)
+    db.add_all([sales_dept, eng_dept])
     db.commit()
+    sales_bucket = models.DataBucket(department_id=sales_dept.id)
+    eng_bucket = models.DataBucket(department_id=eng_dept.id)
+    db.add_all([sales_bucket, eng_bucket])
+    db.commit()
+    print("Created Departments and Data Buckets.")
 
-    # Create Contacts, Deals, Tasks, etc.
-    db.add_all([models.Contact(**data) for data in CONTACTS_DATA])
-    db.add_all([models.Deal(**data) for data in DEALS_DATA])
-    db.add_all([models.CrmTask(**data) for data in CRM_TASKS_DATA])
-    db.add_all([models.Activity(**data) for data in ACTIVITIES_DATA])
-    db.add_all([models.Project(**data) for data in PROJECTS_DATA])
-    db.add_all([models.Task(**data) for data in TASKS_DATA])
-    db.add_all([models.TimeOffRequest(**data) for data in TIMEOFF_DATA])
+    # 4. Create Teams and Data Bowls
+    sales_team = models.Team(name="Account Executives", department_id=sales_dept.id)
+    eng_team = models.Team(name="Core Product", department_id=eng_dept.id)
+    db.add_all([sales_team, eng_team])
+    db.commit()
+    sales_bowl = models.DataBowl(team_id=sales_team.id, data_bucket_id=sales_bucket.id)
+    eng_bowl = models.DataBowl(team_id=eng_team.id, data_bucket_id=eng_bucket.id)
+    db.add_all([sales_bowl, eng_bowl])
+    db.commit()
+    print("Created Teams and Data Bowls.")
+
+    # 5. Create Team Roles and Data Cups
+    team_roles = {}
+    for key, user in users.items():
+        team = sales_team if "sales" in key else eng_team
+        bowl = sales_bowl if "sales" in key else eng_bowl
+        role_name = "Manager" if "manager" in key else "Member"
+        
+        team_role = models.TeamRole(user_id=user.id, team_id=team.id, role=role_name)
+        db.add(team_role)
+        db.commit()
+        
+        data_cup = models.DataCup(data_bowl_id=bowl.id, team_role_id=team_role.id)
+        db.add(data_cup)
+        db.commit()
+        team_roles[key] = {"role": team_role, "cup": data_cup}
+    print("Created Team Roles and Data Cups.")
+
+    # 6. Create Companies
+    companies = {}
+    for c_data in company_data:
+        company = models.Company(name=c_data["name"], domain=c_data["domain"], organization_id=org_id)
+        db.add(company)
+        db.commit()
+        companies[c_data["id"]] = company
+    print(f"Created {len(companies)} companies.")
+
+    # 7. Create Contacts
+    contacts = {}
+    for ct_data in contact_data:
+        owner_role = team_roles[ct_data["owner_key"]]
+        contact = models.Contact(
+            name=ct_data["name"],
+            email=ct_data["email"],
+            company_id=companies[ct_data["company_id"]].id,
+            owner_id=owner_role["role"].user_id,
+            data_cup_id=owner_role["cup"].id,
+            created_at=date.today()
+        )
+        db.add(contact)
+        db.commit()
+        contacts[ct_data["id"]] = contact
+    print(f"Created {len(contacts)} contacts.")
     
-    for element_data in ORGANISER_DATA:
-        element_data["organization_id"] = org_id
-        db.add(models.OrganiserElement(**element_data))
-    
+    # 8. Create Deals
+    for d_data in deal_data:
+        owner_role = team_roles[d_data["owner_key"]]
+        deal = models.Deal(
+            name=d_data["name"],
+            value=d_data["value"],
+            stage=d_data["stage"],
+            company_id=companies[d_data["company_id"]].id,
+            contact_id=contacts[d_data["contact_id"]].id,
+            owner_id=owner_role["role"].user_id,
+            data_cup_id=owner_role["cup"].id,
+            close_date=date.today() + timedelta(days=30)
+        )
+        db.add(deal)
     db.commit()
+    print(f"Created {len(deal_data)} deals.")
+
+def main():
+    print("--- Starting Database Seeding ---")
+    db = SessionLocal()
+
+    # Clear old data
+    print("Clearing old data...")
+    for table in reversed(models.Base.metadata.sorted_tables):
+        db.execute(table.delete())
+    db.commit()
+
+    # --- ORGANIZATION 1: QuantumLeap Dynamics ---
+    quantum_users = [
+        {"id": uuid.uuid4(), "key": "exec", "name": "Anya Sharma", "email": "anya.sharma@quantumleap.dev", "role": models.UserRole.EXECUTIVE, "title": "CEO", "is_system_administrator": True},
+        {"id": uuid.uuid4(), "key": "sales_manager", "name": "Ben Carter", "email": "ben.carter@quantumleap.dev", "role": models.UserRole.MANAGEMENT, "title": "VP of Sales"},
+        {"id": uuid.uuid4(), "key": "sales_rep1", "name": "Chloe Davis", "email": "chloe.davis@quantumleap.dev", "role": models.UserRole.TEAM, "title": "Account Executive"},
+        {"id": uuid.uuid4(), "key": "eng_manager", "name": "David Rodriguez", "email": "david.r@quantumleap.dev", "role": models.UserRole.MANAGEMENT, "title": "Engineering Lead"},
+        {"id": uuid.uuid4(), "key": "eng_dev1", "name": "Eva Martinez", "email": "eva.martinez@quantumleap.dev", "role": models.UserRole.TEAM, "title": "Senior Developer"},
+    ]
+    quantum_companies = [
+        {"id": 1, "name": "Fintech Innovators Inc.", "domain": "fintechinnovate.com"},
+        {"id": 2, "name": "HealthBridge Solutions", "domain": "healthbridge.io"},
+    ]
+    quantum_contacts = [
+        {"id": 101, "name": "Priya Singh", "email": "priya.singh@fintechinnovate.com", "company_id": 1, "owner_key": "sales_rep1"},
+        {"id": 102, "name": "Rohan Mehta", "email": "rohan.mehta@healthbridge.io", "company_id": 2, "owner_key": "sales_rep1"},
+    ]
+    quantum_deals = [
+        {"name": "Project Phoenix - Platform Overhaul", "value": 250000.00, "stage": models.DealStage.NEGOTIATION, "company_id": 1, "contact_id": 101, "owner_key": "sales_rep1"},
+        {"name": "Patient Data API Integration", "value": 120000.00, "stage": models.DealStage.PROPOSAL_SENT, "company_id": 2, "contact_id": 102, "owner_key": "sales_rep1"},
+    ]
+    seed_organization(db, "QuantumLeap Dynamics", quantum_users, quantum_companies, quantum_contacts, quantum_deals)
+
+    # --- ORGANIZATION 2: Stellar Solutions ---
+    stellar_users = [
+        {"id": uuid.uuid4(), "key": "exec", "name": "Ken Thompson", "email": "ken.t@stellar.io", "role": models.UserRole.EXECUTIVE, "title": "President", "is_system_administrator": True},
+        {"id": uuid.uuid4(), "key": "sales_manager", "name": "Laura Chen", "email": "laura.c@stellar.io", "role": models.UserRole.MANAGEMENT, "title": "Sales Director"},
+        {"id": uuid.uuid4(), "key": "sales_rep1", "name": "Michael Brown", "email": "michael.b@stellar.io", "role": models.UserRole.TEAM, "title": "Sales Associate"},
+        {"id": uuid.uuid4(), "key": "eng_manager", "name": "Sofia Garcia", "email": "sofia.g@stellar.io", "role": models.UserRole.MANAGEMENT, "title": "Head of Engineering"},
+    ]
+    stellar_companies = [
+        {"id": 3, "name": "Aperture Labs", "domain": "aperture.com"},
+        {"id": 4, "name": "Black Mesa", "domain": "blackmesa.com"},
+    ]
+    stellar_contacts = [
+        {"id": 103, "name": "Cave Johnson", "email": "cave.j@aperture.com", "company_id": 3, "owner_key": "sales_rep1"},
+        {"id": 104, "name": "Wallace Breen", "email": "wallace.b@blackmesa.com", "company_id": 4, "owner_key": "sales_rep1"},
+    ]
+    stellar_deals = [
+        {"name": "Portal Gun Contract", "value": 1500000.00, "stage": models.DealStage.WON, "company_id": 3, "contact_id": 103, "owner_key": "sales_rep1"},
+        {"name": "HEV Suit Procurement", "value": 750000.00, "stage": models.DealStage.NEW_LEAD, "company_id": 4, "contact_id": 104, "owner_key": "sales_rep1"},
+    ]
+    seed_organization(db, "Stellar Solutions", stellar_users, stellar_companies, stellar_contacts, stellar_deals)
 
     print("\n✅ Database seeding complete!")
-    print("You can log in with any user's email (e.g., 'anya.sharma@quantumleap.dev').")
+    print("You can log in with any user's email (e.g., 'anya.sharma@quantumleap.dev' or 'ken.t@stellar.io').")
     print("The password for all users is: password123")
+    
+    db.close()
 
 if __name__ == "__main__":
-    print("--- Starting Database Seeding ---")
-    db_session = SessionLocal()
-    try:
-        seed_database(db_session)
-    except Exception as e:
-        print(f"\nAn error occurred during seeding: {e}")
-        import traceback
-        traceback.print_exc()
-        db_session.rollback()
-    finally:
-        db_session.close()
-        print("--- Seeding process finished. ---")
+    main()

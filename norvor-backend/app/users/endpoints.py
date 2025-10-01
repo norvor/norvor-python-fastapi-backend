@@ -58,6 +58,13 @@ def read_users(
     return users
 # ---------------------------
 
+@router.get("/me/datacups", response_model=List[UUID])
+def read_my_datacups(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Get the DataCup IDs for the currently logged-in user.
+    """
+    return crud.get_user_datacups(db, user_id=current_user.id)
+
 @router.get("/{user_id}", response_model=schemas.User)
 def read_user(user_id: UUID, db: Session = Depends(get_db)):
     """

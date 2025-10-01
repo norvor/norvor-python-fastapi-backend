@@ -25,10 +25,6 @@ class ContactBase(BaseModel):
     email: EmailStr
     phone: Optional[str] = None
 
-class ContactCreate(ContactBase):
-    owner_id: Optional[UUID] = None
-    company_id: Optional[int] = None
-
 class ContactUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
@@ -36,14 +32,21 @@ class ContactUpdate(BaseModel):
     owner_id: Optional[UUID] = None
     company_id: Optional[int] = None
 
+class ContactCreate(ContactBase):
+    owner_id: Optional[UUID] = None
+    company_id: Optional[int] = None
+    data_cup_id: UUID # <-- ADDED
+
 class Contact(ContactBase):
     id: int
     owner_id: Optional[UUID] = None
     company_id: Optional[int] = None
     created_at: Optional[date] = None
+    data_cup_id: UUID # <-- ADDED
 
     class Config:
         from_attributes = True
+
 
 # --- Deal Schemas ---
 class DealBase(BaseModel):
@@ -56,6 +59,7 @@ class DealCreate(DealBase):
     owner_id: UUID
     contact_id: int
     company_id: int
+    data_cup_id: UUID # <-- ADD THIS
 
 class DealUpdate(BaseModel):
     name: Optional[str] = None
@@ -70,6 +74,7 @@ class Deal(DealBase):
     owner_id: UUID
     contact_id: int
     company_id: int
+    data_cup_id: UUID # <-- ADD THIS
 
     class Config:
         from_attributes = True

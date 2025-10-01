@@ -8,6 +8,7 @@ from ..docs.endpoints import router as docs_router
 from ..auth.endpoints import router as auth_router
 from ..requests.endpoints import router as requests_router
 from ..organizations.endpoints import router as organizations_router
+from ..teams.endpoints import router as teams_router
 
 api_router = APIRouter()
 
@@ -16,6 +17,8 @@ api_router.include_router(auth_router, tags=["Authentication"])
 
 # --- Organization Router ---
 api_router.include_router(organizations_router, prefix="/organizations", tags=["Organizations"])
+api_router.include_router(teams_router, prefix="/teams", tags=["Teams"])
+
 
 # --- Main Application Routers ---
 api_router.include_router(users_router, prefix="/users", tags=["Users"])

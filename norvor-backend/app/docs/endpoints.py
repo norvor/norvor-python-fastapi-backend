@@ -4,6 +4,7 @@ from typing import List
 
 from . import crud, schemas
 from ..db.session import get_db
+from ..users.crud import get_user_datacups
 from ..auth.security import get_current_user # --- ADD THIS IMPORT ---
 from .. import models # --- ADD THIS IMPORT ---
 
@@ -40,6 +41,12 @@ def read_doc(doc_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Document not found")
     return db_doc
 
+@router.get("/my_docs/", response_model=List[schemas.Doc])
+def read_my_docs(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Retrieve all documents for the current user from all their DataCups using an optimized query.
+    """
+    return crud.get_docs_for_user(db, user_id=current_user.id)
 
 @router.put("/{doc_id}", response_model=schemas.Doc)
 def update_doc(doc_id: str, doc: schemas.DocUpdate, db: Session = Depends(get_db)):

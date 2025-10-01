@@ -11,8 +11,8 @@ from sqlalchemy import (
     DateTime,
     Boolean
 )
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship 
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy.orm import relationship
 import uuid
 import enum
 from datetime import datetime
@@ -57,12 +57,6 @@ class RequestStatus(str, enum.Enum):
     APPROVED = 'Approved'
     DENIED = 'Denied'
 
-class OrganiserElementType(str, enum.Enum):
-    DEPARTMENT = 'Department'
-    TEAM = 'Team'
-    SOFTWARE = 'Software'
-    NORVOR_TOOL = 'Norvor Tool'
-
 class ActivityType(str, enum.Enum):
     CALL = 'Call'
     EMAIL = 'Email'
@@ -84,19 +78,88 @@ class Organization(Base):
     
     users = relationship("User", back_populates="organization")
     companies = relationship("Company", back_populates="organization")
+    departments = relationship("Department", back_populates="organization")
+
+class Department(Base):
+    __tablename__ = "departments"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    
+    organization = relationship("Organization", back_populates="departments")
+    teams = relationship("Team", back_populates="department")
+    data_bucket = relationship("DataBucket", uselist=False, back_populates="department") # <-- ONE-TO-ONE
+
+class DataBucket(Base):
+    __tablename__ = "data_buckets"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id"))
+    
+    department = relationship("Department", back_populates="data_bucket")
+    data_bowls = relationship("DataBowl", back_populates="data_bucket") # <-- ONE-TO-MANY
+
+class Team(Base):
+    __tablename__ = "teams"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String, index=True)
+    department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id"))
+    immutable = Column(Boolean, default=False)
+    active = Column(Boolean, default=True)
+    team_leader_id = Column(UUID(as_uuid=True), ForeignKey("team_roles.id"), nullable=True)
+    
+    department = relationship("Department", back_populates="teams")
+    team_roles = relationship("TeamRole", back_populates="team", foreign_keys="[TeamRole.team_id]")
+    data_bowl = relationship("DataBowl", uselist=False, back_populates="team")
+    team_leader = relationship("TeamRole", foreign_keys=[team_leader_id])
+
+class DataBowl(Base):
+    __tablename__ = "data_bowls"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"))
+    data_bucket_id = Column(UUID(as_uuid=True), ForeignKey("data_buckets.id")) # <-- ADDED
+    master_owner_team = Column(UUID(as_uuid=True))
+
+    team = relationship("Team", back_populates="data_bowl")
+    data_bucket = relationship("DataBucket", back_populates="data_bowls") # <-- ADDED
+    data_cups = relationship("DataCup", back_populates="data_bowl") # <-- ONE-TO-MANY
+
+class TeamRole(Base):
+    __tablename__ = "team_roles"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"))
+    role = Column(String, default="Member")
+    
+    user = relationship("User", back_populates="team_roles")
+    team = relationship("Team", back_populates="team_roles", foreign_keys=[team_id])
+    data_cup = relationship("DataCup", uselist=False, back_populates="team_role")
+
+class DataCup(Base):
+    __tablename__ = "data_cups"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    data_bowl_id = Column(UUID(as_uuid=True), ForeignKey("data_bowls.id")) # <-- CHANGED
+    team_role_id = Column(UUID(as_uuid=True), ForeignKey("team_roles.id"), nullable=True)
+    
+    data_bowl = relationship("DataBowl", back_populates="data_cups") # <-- CHANGED
+    team_role = relationship("TeamRole", back_populates="data_cup")
+    deals = relationship("Deal", back_populates="data_cup")
+    docs = relationship("Doc", back_populates="data_cup")
+    projects = relationship("Project", back_populates="data_cup")
+    contacts = relationship("Contact", back_populates="data_cup") # <-- ADDED
 
 class User(Base):
+    # ... (User model remains the same) ...
     __tablename__ = "users"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, index=True)
     email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
+    hashed_password = Column(String(255))
     organization_id = Column(Integer, ForeignKey("organizations.id"))
     role = Column(Enum(UserRole))
+    is_system_administrator = Column(Boolean, default=False)
     avatar = Column(String, nullable=True)
     manager_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     title = Column(String, nullable=True)
-    department = Column(String)
     phone = Column(String, nullable=True)
     address = Column(String, nullable=True)
     emergency_contact = Column(String, nullable=True)
@@ -104,6 +167,7 @@ class User(Base):
 
     organization = relationship("Organization", back_populates="users")
     manager = relationship("User", remote_side=[id], backref="direct_reports")
+    team_roles = relationship("TeamRole", back_populates="user")
     
     projects = relationship("Project", back_populates="manager")
     assigned_tasks = relationship("Task", back_populates="assignee")
@@ -117,6 +181,7 @@ class User(Base):
 
 
 class Company(Base):
+    # ... (Company model remains the same) ...
     __tablename__ = "companies"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
@@ -127,6 +192,7 @@ class Company(Base):
     contacts = relationship("Contact", back_populates="company")
     deals = relationship("Deal", back_populates="company")
 
+
 class Contact(Base):
     __tablename__ = "contacts"
     id = Column(Integer, primary_key=True, index=True)
@@ -136,12 +202,16 @@ class Contact(Base):
     phone = Column(String, nullable=True)
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     created_at = Column(Date)
+    data_cup_id = Column(UUID(as_uuid=True), ForeignKey("data_cups.id")) # <-- ADDED
     
     owner = relationship("User", back_populates="owned_contacts")
     company = relationship("Company", back_populates="contacts")
     deals = relationship("Deal", back_populates="contact")
     activities = relationship("Activity", back_populates="contact")
     crm_tasks = relationship("CrmTask", back_populates="contact")
+    data_cup = relationship("DataCup", back_populates="contacts") # <-- ADDED
+
+# ... (Deal, CrmTask, Activity, Project, Task, TimeOffRequest, Doc, Ticket models remain mostly the same) ...
 
 class Deal(Base):
     __tablename__ = "deals"
@@ -153,11 +223,13 @@ class Deal(Base):
     contact_id = Column(Integer, ForeignKey("contacts.id"))
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     close_date = Column(Date)
+    data_cup_id = Column(UUID(as_uuid=True), ForeignKey("data_cups.id"))
 
     company = relationship("Company", back_populates="deals")
     contact = relationship("Contact", back_populates="deals")
     owner = relationship("User", back_populates="owned_deals")
     crm_tasks = relationship("CrmTask", back_populates="deal")
+    data_cup = relationship("DataCup", back_populates="deals")
 
 class CrmTask(Base):
     __tablename__ = "crm_tasks"
@@ -195,9 +267,12 @@ class Project(Base):
     start_date = Column(Date)
     end_date = Column(Date)
     member_ids = Column(JSON, default=[])
+    data_cup_id = Column(UUID(as_uuid=True), ForeignKey("data_cups.id"))
     
     manager = relationship("User", back_populates="projects")
     tasks = relationship("Task", back_populates="project")
+    data_cup = relationship("DataCup", back_populates="projects")
+
 
 class Task(Base):
     __tablename__ = "tasks"
@@ -224,18 +299,6 @@ class TimeOffRequest(Base):
     
     user = relationship("User", back_populates="time_off_requests")
 
-class OrganiserElement(Base):
-    __tablename__ = "organiser_elements"
-    id = Column(String, primary_key=True, index=True)
-    parent_id = Column(String, ForeignKey("organiser_elements.id"), nullable=True)
-    organization_id = Column(Integer, ForeignKey("organizations.id"))
-    type = Column(Enum(OrganiserElementType))
-    label = Column(String)
-    properties = Column(JSON, default={})
-    
-    parent = relationship("OrganiserElement", remote_side=[id], back_populates="children")
-    children = relationship("OrganiserElement", back_populates="parent")
-
 class Doc(Base):
     __tablename__ = "docs"
     id = Column(String, primary_key=True, index=True)
@@ -244,9 +307,12 @@ class Doc(Base):
     title = Column(String)
     icon = Column(String, nullable=True, default="📄")
     content = Column(Text, nullable=True, default="")
+    data_cup_id = Column(UUID(as_uuid=True), ForeignKey("data_cups.id"))
     
     parent = relationship("Doc", remote_side=[id], back_populates="children")
     children = relationship("Doc", back_populates="parent")
+    data_cup = relationship("DataCup", back_populates="docs")
+
 
 class Ticket(Base):
     __tablename__ = "tickets"

@@ -47,6 +47,14 @@ def update_doc(db: Session, doc_id: str, doc_update: schemas.DocUpdate):
         db.refresh(db_doc)
     return db_doc
 
+@router.get("/my_projects/", response_model=List[schemas.Project])
+def read_my_projects(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Retrieve all projects for the current user from all their DataCups using an optimized query.
+    """
+    return crud.get_projects_for_user(db, user_id=current_user.id)
+
+
 def delete_doc(db: Session, doc_id: str):
     """
     Delete a document.

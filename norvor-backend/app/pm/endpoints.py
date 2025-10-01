@@ -6,6 +6,7 @@ from uuid import UUID
 from . import crud, schemas
 from ..db.session import get_db
 from ..users.crud import get_user
+from ..users.crud import get_user_datacups
 from ..auth.security import get_current_user
 from .. import models
 
@@ -42,8 +43,14 @@ def read_project(project_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Project not found")
     return db_project
 
-
 # --- Task Endpoints ---
+
+@router.get("/my_projects/", response_model=List[schemas.Project])
+def read_my_projects(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Retrieve all projects for the current user from all their DataCups using an optimized query.
+    """
+    return crud.get_projects_for_user(db, user_id=current_user.id)
 
 @router.post("/tasks/", response_model=schemas.Task)
 def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
@@ -59,6 +66,8 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=f"Assignee with id {task.assignee_id} not found")
 
     return crud.create_task(db=db, task=task)
+
+
 
 @router.get("/tasks/", response_model=List[schemas.Task])
 def read_tasks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):

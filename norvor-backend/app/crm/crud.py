@@ -93,6 +93,19 @@ def create_activity(db: Session, activity: schemas.ActivityCreate):
 def get_activities(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
     return db.query(models.Activity).join(models.User, models.Activity.user_id == models.User.id).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
 
+# --- NEW OPTIMIZED FUNCTION ---
+def get_deals_for_user(db: Session, user_id: UUID):
+    """
+    Get all deals for a user in a single, optimized query using JOINs.
+    """
+    return db.query(models.Deal).join(models.DataCup).join(models.TeamRole).filter(models.TeamRole.user_id == user_id).all()
+
+def get_contacts_for_user(db: Session, user_id: UUID):
+    """
+    Get all contacts for a user in a single, optimized query using JOINs.
+    """
+    return db.query(models.Contact).join(models.DataCup).join(models.TeamRole).filter(models.TeamRole.user_id == user_id).all()
+
 # --- CRM TASK CRUD FUNCTIONS ---
 def create_crm_task(db: Session, task: schemas.CrmTaskCreate):
     db_task = models.CrmTask(**task.dict())

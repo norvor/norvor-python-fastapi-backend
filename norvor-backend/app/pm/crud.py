@@ -35,6 +35,19 @@ def create_task(db: Session, task: schemas.TaskCreate):
     db.refresh(db_task)
     return db_task
 
+def get_projects_by_data_cup_ids(db: Session, data_cup_ids: List[UUID]):
+    """
+    Get all projects from a list of DataCup IDs.
+    """
+    return db.query(models.Project).filter(models.Project.data_cup_id.in_(data_cup_ids)).all()
+
+def get_projects_for_user(db: Session, user_id: UUID):
+    """
+    Get all projects for a user in a single, optimized query using JOINs.
+    """
+    return db.query(models.Project).join(models.DataCup).join(models.TeamRole).filter(models.TeamRole.user_id == user_id).all()
+
+
 def get_tasks_for_project(db: Session, project_id: int):
     """
     Get all tasks associated with a specific project.

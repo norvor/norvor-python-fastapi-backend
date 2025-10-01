@@ -6,6 +6,7 @@ from uuid import UUID
 from . import crud, schemas
 from ..db.session import get_db
 from ..users.crud import get_user 
+from ..users.crud import get_user_datacups
 from ..auth.security import get_current_user
 from .. import models
 
@@ -31,12 +32,26 @@ def read_contacts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
     contacts = crud.get_contacts(db, organization_id=current_user.organization_id, skip=skip, limit=limit)
     return contacts
 
+@router.get("/my_contacts/", response_model=List[schemas.Contact])
+def read_my_contacts(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Retrieve all contacts for the current user from all their DataCups using an optimized query.
+    """
+    return crud.get_contacts_for_user(db, user_id=current_user.id)
+
 # ... (other contact endpoints)
 
 # --- Deal Endpoints ---
 @router.post("/deals/", response_model=schemas.Deal)
 def create_deal(deal: schemas.DealCreate, db: Session = Depends(get_db)):
     return crud.create_deal(db=db, deal=deal)
+
+@router.get("/my_deals/", response_model=List[schemas.Deal])
+def read_my_deals(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Retrieve all deals for the current user from all their DataCups using an optimized query.
+    """
+    return crud.get_deals_for_user(db, user_id=current_user.id)
 
 @router.get("/deals/", response_model=List[schemas.Deal])
 def read_deals(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
@@ -59,6 +74,7 @@ def read_activities(skip: int = 0, limit: int = 100, db: Session = Depends(get_d
 @router.post("/tasks/", response_model=schemas.CrmTask)
 def create_crm_task(task: schemas.CrmTaskCreate, db: Session = Depends(get_db)):
     return crud.create_crm_task(db=db, task=task)
+
 
 @router.get("/tasks/", response_model=List[schemas.CrmTask])
 def read_crm_tasks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):

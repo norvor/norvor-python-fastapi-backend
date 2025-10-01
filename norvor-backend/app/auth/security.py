@@ -14,19 +14,18 @@ from . import schemas
 
 
 # --- Password Hashing ---
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     Verify a plain text password against a hashed password.
     """
-    # In a real application, you'd use pwd_context.verify for security.
-    # For this project, a simple comparison is used.
-    return plain_password == hashed_password
+    # This is the correct and secure way to verify passwords.
+    return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password: str) -> str:
     """
-    Hash a plain text password.
+    Hash a plain text password using Argon2.
     """
     return pwd_context.hash(password)
 
