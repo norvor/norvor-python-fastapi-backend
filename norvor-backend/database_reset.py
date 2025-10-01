@@ -24,11 +24,6 @@ def reset_database_with_cascade():
         # The connection is transactional by default
         with connection.begin() as transaction:
             try:
-                print("Disabling foreign key constraints (for safety)...")
-                # For PostgreSQL, this isn't strictly necessary with CASCADE,
-                # but it's good practice for other dialects.
-                connection.execute(text("SET session_replication_role = 'replica';"))
-
                 print("Dropping all existing tables with CASCADE...")
                 for table_name in table_names:
                     # Use "IF EXISTS" to prevent errors if a table is already gone
@@ -36,9 +31,6 @@ def reset_database_with_cascade():
                     drop_query = text(f'DROP TABLE IF EXISTS "{table_name}" CASCADE;')
                     print(f"Executing: {drop_query}")
                     connection.execute(drop_query)
-                
-                print("Re-enabling foreign key constraints...")
-                connection.execute(text("SET session_replication_role = 'origin';"))
                 
                 transaction.commit()
                 print("Tables dropped successfully.")
