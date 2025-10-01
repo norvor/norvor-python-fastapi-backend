@@ -1,27 +1,28 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from uuid import UUID
 from . import schemas
 from .. import models
 from ..auth.security import get_password_hash
 from ..teams.crud import create_department, create_team, create_team_role
+from ..teams import schemas as team_schemas
 
 def get_user(db: Session, user_id: UUID):
     """
-    Get a single user by their ID.
+    Get a single user by their ID, ensuring the organization is loaded.
     """
-    return db.query(models.User).filter(models.User.id == user_id).first()
+    return db.query(models.User).options(joinedload(models.User.organization)).filter(models.User.id == user_id).first()
 
 def get_user_by_email(db: Session, email: str):
     """
-    Get a single user by their email address.
+    Get a single user by their email address, ensuring the organization is loaded.
     """
-    return db.query(models.User).filter(models.User.email == email).first()
+    return db.query(models.User).options(joinedload(models.User.organization)).filter(models.User.email == email).first()
 
 def get_users(db: Session, organization_id: int, skip: int = 0, limit: int = 100):
     """
-    Get a list of users for a specific organization, with pagination.
+    Get a list of users for a specific organization, with pagination, ensuring organizations are loaded.
     """
-    return db.query(models.User).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
+    return db.query(models.User).options(joinedload(models.User.organization)).filter(models.User.organization_id == organization_id).offset(skip).limit(limit).all()
 
 def create_user(db: Session, user: schemas.UserCreate):
     """
@@ -31,29 +32,6 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.add(db_org)
     db.commit()
     db.refresh(db_org)
-
-    hashed_password = get_password_hash('invisible')
-    # Create invisible user
-    invisible_user = models.User(
-        name=f"{db_org.name}-admin",
-        email=f"admin@{db_org.name.lower().replace(' ', '')}.norvor.com",
-        hashed_password=hashed_password,
-        organization_id=db_org.id,
-        role=models.UserRole.EXECUTIVE,
-    )
-    db.add(invisible_user)
-    db.commit()
-    db.refresh(invisible_user)
-
-    # Create default department and teams
-    store_dept = create_department(db, department=schemas.DepartmentCreate(name="Store"), org_id=db_org.id)
-    warm_team = create_team(db, team=schemas.TeamCreate(name="Warm", department_id=store_dept.id, immutable=True))
-    cold_team = create_team(db, team=schemas.TeamCreate(name="Cold", department_id=store_dept.id, immutable=True))
-    
-    # Add invisible user to teams
-    create_team_role(db, team_role=schemas.TeamRoleCreate(user_id=invisible_user.id, team_id=warm_team.id))
-    create_team_role(db, team_role=schemas.TeamRoleCreate(user_id=invisible_user.id, team_id=cold_team.id))
-
 
     hashed_password = get_password_hash(user.password)
     
@@ -69,6 +47,9 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    
+    # Reload the user with the organization relationship
+    db.refresh(db_user, attribute_names=['organization'])
     
     return db_user
 
@@ -89,6 +70,10 @@ def create_user_by_admin(db: Session, user: schemas.UserCreateByAdmin, organizat
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    
+    # Reload the user with the organization relationship
+    db.refresh(db_user, attribute_names=['organization'])
+
     return db_user
 
 def get_user_datacups(db: Session, user_id: UUID):
@@ -108,11 +93,13 @@ def update_user(db: Session, user_id: UUID, user_update: schemas.UserUpdate):
     """
     db_user = get_user(db, user_id=user_id)
     if db_user:
-        update_data = user_update.dict(exclude_unset=True, exclude_none=True)
+        update_data = user_update.dict(exclude_unset=True)
         
         for key, value in update_data.items():
             setattr(db_user, key, value)
             
         db.commit()
         db.refresh(db_user)
+        # Reload the user with the organization relationship after update
+        db.refresh(db_user, attribute_names=['organization'])
     return db_user

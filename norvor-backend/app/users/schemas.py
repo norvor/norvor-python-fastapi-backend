@@ -2,7 +2,6 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 from uuid import UUID
 from ..models import UserRole
-# --- ADD THIS IMPORT ---
 from ..organizations.schemas import OrganizationInUser
 
 # --- Properties to receive via API on public creation ---
@@ -31,6 +30,11 @@ class UserUpdate(BaseModel):
     department: Optional[str] = None
     title: Optional[str] = None
     organization_id: Optional[int] = None
+    managerId: Optional[UUID] = None
+    avatar: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    emergency_contact: Optional[str] = None
 
 
 # --- Properties to return via API ---
@@ -39,10 +43,10 @@ class User(BaseModel):
     name: str
     email: EmailStr
     role: UserRole
-    # --- REPLACE 'organization_id' WITH THIS ---
     organization: OrganizationInUser
-    # -------------------------------------------
-    department: str
+    # --- THIS IS THE FIX ---
+    department: Optional[str] = None
+    # -----------------------
     avatar: Optional[str] = None
     title: Optional[str] = None
 
