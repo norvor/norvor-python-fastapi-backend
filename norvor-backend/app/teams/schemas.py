@@ -59,7 +59,10 @@ class TeamRole(TeamRoleBase):
 class DataBowlBase(BaseModel):
     team_id: UUID
     data_bucket_id: UUID
-    master_owner_team: UUID
+    # --- THIS IS THE FIX ---
+    # Made this field optional to match potential database state
+    master_owner_team: Optional[UUID] = None
+    # -----------------------
 
 class DataBowlCreate(DataBowlBase):
     pass
