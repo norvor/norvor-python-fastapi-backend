@@ -57,7 +57,7 @@ class TeamRole(TeamRoleBase):
 # DataBowl Schemas
 # ===================================================================
 class DataBowlBase(BaseModel):
-    team_id: UUID
+    team_id: Optional[UUID] = None
     data_bucket_id: UUID
     # --- THIS IS THE FIX ---
     # Made this field optional to match potential database state
