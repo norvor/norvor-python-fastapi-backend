@@ -32,6 +32,29 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.add(db_org)
     db.commit()
     db.refresh(db_org)
+    # --- ADDED: Seed Default HR Structure ---
+    # Create HR Department
+    hr_dept = models.Department(name="Human Resources", organization_id=db_org.id)
+    db.add(hr_dept)
+    db.flush() # Generate ID
+    
+    # Create necessary DataBucket
+    hr_bucket = models.DataBucket(department_id=hr_dept.id)
+    db.add(hr_bucket)
+    db.flush()
+
+    # Create HR Team with the HR Tool enabled
+    hr_team = models.Team(
+        name="HR Team",
+        department_id=hr_dept.id,
+        tools=[models.Tool.HR, models.Tool.DOCS] # Enable HR tool by default
+    )
+    db.add(hr_team)
+    db.flush()
+    
+    # Create necessary DataBowl
+    hr_bowl = models.DataBowl(team_id=hr_team.id, data_bucket_id=hr_bucket.id, master_owner_team=hr_team.id)
+    db.add(hr_bowl)
 
     hashed_password = get_password_hash(user.password)
     
