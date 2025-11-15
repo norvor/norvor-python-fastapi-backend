@@ -19,5 +19,4 @@ from ..models import (
     DataBowl,
     Activity,
     CrmTask,
-    OrganiserElement
 )

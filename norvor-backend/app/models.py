@@ -334,16 +334,3 @@ class Ticket(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     submitter = relationship("User", back_populates="submitted_tickets")
-
-class OrganiserElement(Base):
-    __tablename__ = 'organiser_elements'
-    id = Column(String, primary_key=True, index=True, default=lambda: f"el_{uuid.uuid4().hex}")
-    organization_id = Column(Integer, ForeignKey('organizations.id'))
-    parent_id = Column(String, ForeignKey('organiser_elements.id'), nullable=True)
-    type = Column(String, nullable=False)
-    label = Column(String, nullable=False)
-    properties = Column(JSON, default={})
-    
-    organization = relationship("Organization", back_populates="organiser_elements")
-    parent = relationship("OrganiserElement", remote_side=[id], back_populates="children")
-    children = relationship("OrganiserElement", back_populates="parent")

@@ -8,16 +8,7 @@ from .. import models
 
 router = APIRouter()
 
-# --- ADD THIS NEW ENDPOINT ---
-@router.get("/sidebar_config", response_model=schemas.SidebarConfig)
-def get_sidebar_configuration(
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
-):
-    """
-    Get the dynamically generated sidebar configuration for the user's organization.
-    """
-    return crud.get_sidebar_config(db=db, org_id=current_user.organization_id)
+
 # ------------------------------------
 
 @router.post("/complete_onboarding", response_model=schemas.Organization)
