@@ -87,7 +87,6 @@ class Organization(Base):
     users = relationship("User", back_populates="organization")
     companies = relationship("Company", back_populates="organization")
     departments = relationship("Department", back_populates="organization")
-    organiser_elements = relationship("OrganiserElement", back_populates="organization")
 
 class Department(Base):
     __tablename__ = "departments"
