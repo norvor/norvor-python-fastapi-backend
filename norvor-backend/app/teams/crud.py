@@ -33,7 +33,7 @@ def update_department(db: Session, department_id: UUID, department_update: schem
 
 def delete_department(db: Session, department_id: UUID):
     db_department = get_department(db, department_id)
-    if db_department and not db_department.teams:
+    if db_department and not db_department.teams and not db_department.immutable:
         db.delete(db_department)
         db.commit()
         return db_department
@@ -72,7 +72,7 @@ def update_team(db: Session, team_id: UUID, team_update: schemas.TeamUpdate):
 
 def delete_team(db: Session, team_id: UUID):
     db_team = get_team(db, team_id)
-    if db_team:
+    if db_team and not db_team.immutable:
         db.delete(db_team)
         db.commit()
         return db_team

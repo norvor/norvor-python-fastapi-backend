@@ -93,6 +93,7 @@ class Department(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, index=True)
     organization_id = Column(Integer, ForeignKey("organizations.id"))
+    immutable = Column(Boolean, default=False)
     
     organization = relationship("Organization", back_populates="departments")
     teams = relationship("Team", back_populates="department")

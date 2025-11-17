@@ -34,7 +34,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_org)
     # --- ADDED: Seed Default HR Structure ---
     # Create HR Department
-    hr_dept = models.Department(name="Human Resources", organization_id=db_org.id)
+    hr_dept = models.Department(name="Human Resources", organization_id=db_org.id, immutable=True)
     db.add(hr_dept)
     db.flush() # Generate ID
     
@@ -47,7 +47,8 @@ def create_user(db: Session, user: schemas.UserCreate):
     hr_team = models.Team(
         name="HR Team",
         department_id=hr_dept.id,
-        tools=[models.Tool.HR, models.Tool.DOCS] # Enable HR tool by default
+        tools=[models.Tool.HR, models.Tool.DOCS],
+        immutable=True # Enable HR tool by default
     )
     db.add(hr_team)
     db.flush()

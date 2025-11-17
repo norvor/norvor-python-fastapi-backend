@@ -50,7 +50,12 @@ def seed_organization(db: Session, org_name: str, user_data: list, company_data:
     # 3. Create Departments and Data Buckets
     sales_dept = models.Department(name="Sales", organization_id=org_id)
     eng_dept = models.Department(name="Engineering", organization_id=org_id)
-    db.add_all([sales_dept, eng_dept])
+    hr_dept = models.Department(
+        name="Human Resources", 
+        organization_id=org_id, 
+        immutable=True  # <-- ADD THIS
+    )
+    db.add_all([sales_dept, eng_dept, hr_dept])
     db.commit()
     sales_bucket = models.DataBucket(department_id=sales_dept.id)
     eng_bucket = models.DataBucket(department_id=eng_dept.id)
@@ -69,7 +74,13 @@ def seed_organization(db: Session, org_name: str, user_data: list, company_data:
         department_id=eng_dept.id,
         tools=[models.Tool.PROJECTS, models.Tool.DOCS, models.Tool.REQUESTS]
     )
-    db.add_all([sales_team, eng_team])
+    hr_team = models.Team(
+        name="HR Team", 
+        department_id=hr_dept.id,
+        tools=[models.Tool.HR, models.Tool.DOCS, models.Tool.REQUESTS],
+        immutable=True  # <-- ADD THIS
+    )
+    db.add_all([sales_team, eng_team, hr_team])
     db.commit()
     sales_bowl = models.DataBowl(team_id=sales_team.id, data_bucket_id=sales_bucket.id)
     eng_bowl = models.DataBowl(team_id=eng_team.id, data_bucket_id=eng_bucket.id)
