@@ -45,7 +45,7 @@ def create_user(db: Session, user: schemas.UserCreate):
 
     # Create HR Team with the HR Tool enabled
     hr_team = models.Team(
-        name="HR Team",
+        name="HR",
         department_id=hr_dept.id,
         tools=[models.Tool.HR, models.Tool.DOCS],
         immutable=True # Enable HR tool by default

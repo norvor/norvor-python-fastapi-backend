@@ -75,7 +75,7 @@ def seed_organization(db: Session, org_name: str, user_data: list, company_data:
         tools=[models.Tool.PROJECTS, models.Tool.DOCS, models.Tool.REQUESTS]
     )
     hr_team = models.Team(
-        name="HR Team", 
+        name="HR", 
         department_id=hr_dept.id,
         tools=[models.Tool.HR, models.Tool.DOCS, models.Tool.REQUESTS],
         immutable=True  # <-- ADD THIS
